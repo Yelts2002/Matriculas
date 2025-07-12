@@ -43,8 +43,7 @@
                     <td>{{ apoderado.parentesco }}</td>
                     <td>
                         {% for alumno in apoderado.alumnos.all %}
-                        <span class="badge bg-info text-dark">{{ alumno.nombres_completos }}</span>{% if not
-                        forloop.last %}, {% endif %}
+                        <span class="badge bg-info text-dark">{{ alumno.nombres_completos }}</span>{% if not forloop.last %}, {% endif %}
                         {% empty %}
                         <span class="text-muted">Sin alumnos</span>
                         {% endfor %}

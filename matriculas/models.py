@@ -6,10 +6,10 @@ from django.utils import timezone
 
 class Ciclo(models.Model):
     nombre = models.CharField(max_length=50, unique=True, verbose_name="Nombre del ciclo")
-    turnos = models.ManyToManyField('Turno', related_name='ciclos', verbose_name="Turnos disponibles")
     fecha_inicio = models.DateField(verbose_name="Fecha de inicio")
     fecha_fin = models.DateField(verbose_name="Fecha de finalización")
     activo = models.BooleanField(default=True, verbose_name="Ciclo activo")
+    turnos = models.ManyToManyField('Turno', related_name='ciclos', verbose_name="Turnos disponibles")
 
     class Meta:
         verbose_name = "Ciclo"
