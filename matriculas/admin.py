@@ -74,13 +74,11 @@ class TurnoAdmin(admin.ModelAdmin):
     search_fields = ('nombre',)
     ordering = ('nombre',)
 
-
 @admin.register(Horario)
 class HorarioAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'turno', 'hora_inicio', 'hora_fin')
     list_filter = ('turno',)
     ordering = ('turno', 'hora_inicio')
-
 
 @admin.register(Matricula)
 class MatriculaAdmin(admin.ModelAdmin):
@@ -105,3 +103,9 @@ class MatriculaAdmin(admin.ModelAdmin):
         return super().get_queryset(request).select_related(
             'alumno', 'apoderado', 'ciclo', 'turno', 'horario'
         )
+
+@admin.register(Pago)
+class PagoAdmin(admin.ModelAdmin):
+    list_display = ('matricula', 'numero_cuota', 'estado', 'monto_pagado', 'fecha_pago')
+    list_filter = ('estado', 'tipo_pago')
+    search_fields = ('matricula__codigo', 'matricula__alumno__nombres_completos')

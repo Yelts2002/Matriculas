@@ -8,6 +8,8 @@ from xhtml2pdf import pisa
 from io import BytesIO
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
+from django.db.models import Count, Sum, Q
 
 from .models import *
 from .forms import *
@@ -348,6 +350,25 @@ class MatriculaCreateView(CreateView):
 
         matricula.usuario_registro = self.request.user
         matricula.save()
+
+        # === Generar pagos automáticos ===
+        monto_total = matricula.monto
+        cuotas = matricula.cuotas
+        monto_por_cuota = round(monto_total / cuotas, 2)
+        fecha_base = timezone.now().date()
+
+        for i in range(1, cuotas + 1):
+            fecha_vencimiento = fecha_base + timezone.timedelta(days=30 * (i - 1))
+            Pago.objects.create(
+                matricula=matricula,
+                numero_cuota=i,
+                tipo_pago='cuota',
+                monto_programado=monto_por_cuota,
+                fecha_vencimiento=fecha_vencimiento,
+                estado='pendiente',
+                usuario_registro=self.request.user
+            )
+
         messages.success(self.request, 'Matrícula registrada exitosamente')
         return redirect('matriculas:matricula_detail', pk=matricula.pk)
 
@@ -372,14 +393,16 @@ class MatriculaDetailView(DetailView):
     template_name = 'matriculas/matricula_detail.html'
     context_object_name = 'matricula'
 
+from django.http import JsonResponse
+
 class MatriculaDeleteView(DeleteView):
     model = Matricula
-    template_name = 'matriculas/matricula_confirm_delete.html'
     success_url = reverse_lazy('matriculas:matricula_list')
 
-    def delete(self, request, *args, **kwargs):
-        messages.success(request, 'Matrícula eliminada correctamente')
-        return super().delete(request, *args, **kwargs)
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.delete()
+        return JsonResponse({'success': True})
 
 def ficha_matricula_pdf(request, pk):
     matricula = get_object_or_404(Matricula, pk=pk)
@@ -448,3 +471,49 @@ def buscar_apoderados(request):
     apoderados = Apoderado.objects.filter(nombre_completo__icontains=q)[:20]
     data = [{'id': a.id, 'nombre': a.nombre_completo} for a in apoderados]
     return JsonResponse(data, safe=False)
+
+@login_required
+def lista_pagos_matricula(request, matricula_id):
+    matricula = get_object_or_404(Matricula, id=matricula_id)
+    pagos = matricula.pagos.order_by('numero_cuota', 'fecha_vencimiento')
+    return render(request, 'matriculas/lista_pagos.html', {'matricula': matricula, 'pagos': pagos})
+
+@login_required
+def registrar_pago(request, matricula_id):
+    matricula = get_object_or_404(Matricula, id=matricula_id)
+    if request.method == 'POST':
+        form = PagoForm(request.POST)
+        if form.is_valid():
+            nuevo_pago = form.save(commit=False)
+            nuevo_pago.matricula = matricula
+            nuevo_pago.usuario_registro = request.user
+            nuevo_pago.save()
+            messages.success(request, 'Pago registrado correctamente.')
+            return redirect('matriculas:lista_pagos_matricula', matricula_id=matricula.id)
+    else:
+        form = PagoForm()
+    return render(request, 'matriculas/formulario_pago.html', {'form': form, 'matricula': matricula})
+
+@login_required
+def editar_pago(request, pago_id):
+    pago = get_object_or_404(Pago, id=pago_id)
+    if request.method == 'POST':
+        form = PagoForm(request.POST, instance=pago)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Pago actualizado correctamente.')
+            return redirect('matriculas:lista_pagos_matricula', matricula_id=pago.matricula.id)
+    else:
+        form = PagoForm(instance=pago)
+    return render(request, 'matriculas/formulario_pago.html', {'form': form, 'matricula': pago.matricula})
+
+@login_required
+def resumen_general_pagos(request):
+    matriculas = Matricula.objects.select_related('alumno').annotate(
+        total_pagos=Count('pagos'),
+        cuotas_pagadas=Count('pagos', filter=Q(pagos__estado='pagado')),
+        cuotas_pendientes=Count('pagos', filter=Q(pagos__estado='pendiente')),
+        monto_total=Sum('pagos__monto_programado'),
+        monto_pagado=Sum('pagos__monto_pagado'),
+    )
+    return render(request, 'matriculas/lista_general_pagos.html', {'matriculas': matriculas})

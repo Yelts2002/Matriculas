@@ -3,6 +3,7 @@ from django.db.models import Max
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 class Ciclo(models.Model):
     nombre = models.CharField(max_length=50, unique=True, verbose_name="Nombre del ciclo")
@@ -20,23 +21,13 @@ class Ciclo(models.Model):
         return self.nombre
     
     def finalizar_ciclo(self):
-        """
-        Finaliza el ciclo y da de baja a los alumnos asociados
-        """
+
         with transaction.atomic():
-            # Obtener todas las matrículas activas de este ciclo
             matriculas_activas = self.matricula_set.filter(estado='activa')
-            
-            # Actualizar el estado de las matrículas
-            matriculas_activas.update(estado='finalizada')
-            
-            # Obtener los IDs de alumnos únicos
-            alumnos_ids = matriculas_activas.values_list('alumno_id', flat=True).distinct()
-            
-            # Dar de baja a los alumnos (pero no eliminarlos)
+            matriculas_activas.update(estado='finalizada')            
+            alumnos_ids = matriculas_activas.values_list('alumno_id', flat=True).distinct()            
             Alumno.objects.filter(id__in=alumnos_ids).update(activo=False)
             
-            # Marcar el ciclo como inactivo
             self.activo = False
             self.save()
             
@@ -44,15 +35,12 @@ class Ciclo(models.Model):
 
     @classmethod
     def verificar_ciclos_finalizados(cls):
-        """
-        Verifica si hay ciclos que han llegado a su fecha de fin y los finaliza
-        """
+
         hoy = timezone.now().date()
         ciclos_a_finalizar = cls.objects.filter(
             activo=True,
             fecha_fin__lte=hoy
         )
-        
         for ciclo in ciclos_a_finalizar:
             ciclo.finalizar_ciclo()
             
@@ -223,8 +211,7 @@ class Apoderado(models.Model):
 
 class Matricula(models.Model):
     ESTADO_CHOICES = [
-        ('activa', 'Activa'), ('congelada', 'Congelada'),
-        ('retirada', 'Retirada'), ('finalizada', 'Finalizada')
+        ('activa', 'Activa'), ('congelada', 'Congelada'), ('finalizada', 'Finalizada')
     ]
     MODALIDADES = [('presencial', 'Presencial'), ('virtual', 'Virtual')]
     TIPOS_ALUMNO = [
@@ -303,3 +290,45 @@ class Matricula(models.Model):
         )
         
         return nueva_matricula
+    
+class Pago(models.Model):
+    ESTADO_PAGO = [
+        ('pendiente', 'Pendiente'),
+        ('pagado', 'Pagado'),
+        ('observado', 'Observado'),
+    ]
+
+    TIPO_PAGO = [
+        ('cuota', 'Cuota mensual'),
+        ('matricula', 'Matrícula'),
+        ('otros', 'Otros'),
+    ]
+
+    matricula = models.ForeignKey('Matricula', on_delete=models.CASCADE, related_name='pagos')
+    numero_cuota = models.IntegerField(null=True, blank=True)  # Si es cuota mensual
+    tipo_pago = models.CharField(max_length=20, choices=TIPO_PAGO)
+    monto_programado = models.DecimalField(max_digits=10, decimal_places=2)
+    monto_pagado = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    fecha_vencimiento = models.DateField()
+    fecha_pago = models.DateField(null=True, blank=True)
+    estado = models.CharField(max_length=20, choices=ESTADO_PAGO, default='pendiente')
+    observacion = models.TextField(blank=True)
+    usuario_registro = models.ForeignKey(User, on_delete=models.PROTECT, related_name='pagos_registrados')
+    fecha_registro = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Pago"
+        verbose_name_plural = "Pagos"
+        ordering = ['fecha_vencimiento']
+        unique_together = ('matricula', 'numero_cuota', 'tipo_pago')
+
+    def __str__(self):
+        cuota_info = f" - Cuota {self.numero_cuota}" if self.numero_cuota else ""
+        return f"{self.matricula.codigo}{cuota_info} - {self.get_estado_display()}"
+
+    def confirmar_pago(self, monto_pagado, usuario, fecha_pago=None):
+        self.monto_pagado = monto_pagado
+        self.fecha_pago = fecha_pago or timezone.now().date()
+        self.estado = 'pagado'
+        self.usuario_registro = usuario
+        self.save()

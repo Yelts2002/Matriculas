@@ -1,155 +1,269 @@
 <!DOCTYPE html>
-<html lang="es">
+{% load static %}
+<html lang="es" class="h-100">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Sistema de Gestión Académica de la Academia Robert Hooke">
     <title>{% block title %}Academia Robert Hooke{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
 
-    <style>
-        .form-container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .card {
-            margin-bottom: 20px;
-            box-shadow: 0 0 5px rgba(0,0,0,0.1);
-        }
-        .navbar-brand {
-            font-weight: bold;
-        }
-    </style>
-    {% block extra_css %}{% endblock %}
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'matriculas:home' %}">Academia Robert Hooke</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'matriculas:alumno_list' %}">Alumnos</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'matriculas:apoderado_list' %}">Apoderados</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'matriculas:matricula_list' %}">Matrículas</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            Configuración
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{% url 'matriculas:ciclo_list' %}">Ciclos</a></li>
-                            <li><a class="dropdown-item" href="{% url 'matriculas:turno_list' %}">Turnos</a></li>
-                            <li><a class="dropdown-item" href="{% url 'matriculas:horario_list' %}">Horarios</a></li>
-                        </ul>
-                    </li>
-                </ul>
+
+<body class="d-flex flex-column h-100">
+    <!-- Header -->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+            <div class="container">
+                <a class="navbar-brand fw-bold" href="{% url 'matriculas:home' %}">
+                    <i class="bi bi-mortarboard-fill me-2"></i>Academia Robert Hooke
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                    aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="mainNavbar">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'matriculas:alumno_list' %}" aria-label="Alumnos">
+                                <i class="bi bi-people-fill me-1"></i> Alumnos
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'matriculas:apoderado_list' %}" aria-label="Apoderados">
+                                <i class="bi bi-person-bounding-box me-1"></i> Apoderados
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'matriculas:matricula_list' %}" aria-label="Matrículas">
+                                <i class="bi bi-journal-text me-1"></i> Matrículas
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'matriculas:resumen_general_pagos' %}" aria-label="Pagos">
+                                <i class="bi bi-cash-coin me-1"></i> Pagos
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="configDropdown" role="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-gear-fill me-1"></i> Configuración
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="configDropdown">
+                                <li><a class="dropdown-item" href="{% url 'matriculas:ciclo_list' %}">Ciclos</a></li>
+                                <li><a class="dropdown-item" href="{% url 'matriculas:turno_list' %}">Turnos</a></li>
+                                <li><a class="dropdown-item" href="{% url 'matriculas:horario_list' %}">Horarios</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" href="{% url 'admin:index' %}"
+                                        target="_blank">Administración</a></li>
+                            </ul>
+                        </li>
+
+                    </ul>
+                </div>
             </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-shrink-0">
+        <div class="container my-4">
+            {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    <div class="d-flex align-items-center">
+                        {% if message.tags == 'success' %}
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        {% elif message.tags == 'error' %}
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        {% endif %}
+                        <div>{{ message }}</div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% block breadcrumb %}
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'matriculas:home' %}">Pantalla principal</a></li>
+                    {% block breadcrumb_items %}{% endblock %}
+                </ol>
+            </nav>
+            {% endblock %}
+
+            {% block content %}{% endblock %}
         </div>
-    </nav>
+    </main>
 
-    <div class="container mt-4">
-        {% if messages %}
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <!-- Footer -->
+    <footer class="footer mt-auto py-3 bg-light border-top">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start">
+                    <span class="text-muted">&copy; {% now "Y" %} Academia Robert Hooke - Sistema de Gestión
+                        Académica</span>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <span class="text-muted">Versión 1.0.0</span>
+                </div>
             </div>
-            {% endfor %}
-        {% endif %}
-
-        {% block content %}{% endblock %}
-    </div>
-
-    <footer class="bg-light text-center text-lg-start mt-5">
-        <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.05);">
-            © {% now "Y" %} Academia Robert Hooke - Sistema de Gestión Académica
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    {% block extra_js %}{% endblock %}
-</body>
-
-<!-- Modal eliminar -->
-<div class="modal fade" id="modalEliminar" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title">Confirmar eliminación</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        ¿Estás seguro de eliminar a <strong id="nombreAEliminar"></strong>?
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" id="btnConfirmarEliminar" class="btn btn-danger">Eliminar</button>
-      </div>
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteModalLabel">Confirmar eliminación</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que deseas eliminar <strong id="entityName"></strong>? Esta acción no se puede
+                    deshacer.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form id="deleteForm" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash-fill me-1"></i> Eliminar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
+
+    <!-- JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
-let idSeleccionado = null;
-let tipoEntidad = null;
+    let idSeleccionado = null;
+    let tipoEntidad = null;
 
-function configurarModalEliminar(id, nombre, tipo) {
-    idSeleccionado = id;
-    tipoEntidad = tipo;
-    document.getElementById('nombreAEliminar').textContent = nombre;
-    new bootstrap.Modal(document.getElementById('modalEliminar')).show();
-}
+    // Mostrar el modal de confirmación con los datos
+    function configurarModalEliminar(id, nombre, tipo) {
+        idSeleccionado = id;
+        tipoEntidad = tipo;
+        document.getElementById('nombreAEliminar').textContent = nombre;
+        new bootstrap.Modal(document.getElementById('modalEliminar')).show();
+    }
 
-document.querySelectorAll('.btn-delete-alumno').forEach(btn => {
-    btn.addEventListener('click', () => {
-        configurarModalEliminar(btn.dataset.id, btn.dataset.nombre, 'alumno');
+    // Botones de eliminar alumno
+    document.querySelectorAll('.btn-delete-alumno').forEach(btn => {
+        btn.addEventListener('click', () => {
+            configurarModalEliminar(btn.dataset.id, btn.dataset.nombre, 'alumno');
+        });
     });
-});
 
-document.querySelectorAll('.btn-delete-apoderado').forEach(btn => {
-    btn.addEventListener('click', () => {
-        configurarModalEliminar(btn.dataset.id, btn.dataset.nombre, 'apoderado');
+    // Botones de eliminar apoderado
+    document.querySelectorAll('.btn-delete-apoderado').forEach(btn => {
+        btn.addEventListener('click', () => {
+            configurarModalEliminar(btn.dataset.id, btn.dataset.nombre, 'apoderado');
+        });
     });
-});
 
-// Confirmar eliminación
-document.getElementById('btnConfirmarEliminar').addEventListener('click', () => {
-    const url = tipoEntidad === 'alumno'
-        ? `/alumnos/eliminar/${idSeleccionado}/`
-        : `/apoderados/eliminar/${idSeleccionado}/`;
+    // Botones de eliminar matrícula
+    document.querySelectorAll('.btn-delete-matricula').forEach(btn => {
+        btn.addEventListener('click', () => {
+            configurarModalEliminar(btn.dataset.id, btn.dataset.nombre, 'matricula');
+        });
+    });
 
-    fetch(url, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': '{{ csrf_token }}',
-        },
-    })
-    .then(response => {
-        if (response.ok) {
-            // ✅ ELIMINACIÓN EN TIEMPO REAL
-            const fila = document.querySelector(`tr[data-id="${idSeleccionado}"]`);
-            if (fila) fila.remove();
-
-            bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide();
-        } else {
-            alert('Error al eliminar');
+    // Confirmar eliminación
+    document.getElementById('btnConfirmarEliminar').addEventListener('click', () => {
+        let url = '';
+        switch (tipoEntidad) {
+            case 'alumno':
+                url = `/alumnos/eliminar/${idSeleccionado}/`;
+                break;
+            case 'apoderado':
+                url = `/apoderados/eliminar/${idSeleccionado}/`;
+                break;
+            case 'matricula':
+                url = `/matriculas/eliminar/${idSeleccionado}/`;
+                break;
         }
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+        })
+            .then(response => {
+                if (response.ok) {
+                    // Elimina la fila de la tabla
+                    const fila = document.querySelector(`tr[data-id="${idSeleccionado}"]`);
+                    if (fila) fila.remove();
+
+                    // Oculta el modal
+                    bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide();
+                } else {
+                    alert('❌ Error al eliminar');
+                }
+            });
     });
-});
+
+    // Initialize Select2
+    $(document).ready(function () {
+        $('.select2').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: 'Seleccione una opción'
+        });
+
+        // Tooltips
+        $('[data-bs-toggle="tooltip"]').tooltip();
+
+        // Popovers
+        $('[data-bs-toggle="popover"]').popover();
+    });
+
+    // Delete modal handler
+    document.addEventListener('DOMContentLoaded', function () {
+        const deleteModal = document.getElementById('deleteModal');
+        if (deleteModal) {
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const entityName = button.getAttribute('data-entity-name');
+                const deleteUrl = button.getAttribute('data-delete-url');
+
+                document.getElementById('entityName').textContent = entityName;
+                document.getElementById('deleteForm').action = deleteUrl;
+            });
+        }
+
+        // Auto-dismiss alerts after 5 seconds
+        setTimeout(function () {
+            const alerts = document.querySelectorAll('.alert-dismissible');
+            alerts.forEach(function (alert) {
+                new bootstrap.Alert(alert).close();
+            });
+        }, 5000);
+    });
 </script>
+</body>
 
 </html>

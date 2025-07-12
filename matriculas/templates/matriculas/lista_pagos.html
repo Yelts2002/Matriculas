@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Pagos de la matrícula: {{ matricula.codigo }} - {{ matricula.alumno.nombres_completos }}</h2>
+<a href="{% url 'matriculas:registrar_pago' matricula.id %}" class="btn btn-primary mb-3">Registrar nuevo pago</a>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th># Cuota</th>
+      <th>Tipo</th>
+      <th>Monto</th>
+      <th>Pagado</th>
+      <th>Vencimiento</th>
+      <th>Fecha Pago</th>
+      <th>Estado</th>
+      <th>Observación</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>   
+    {% for pago in pagos %}
+    <tr>
+      <td>{{ pago.numero_cuota|default:"-" }}</td>
+      <td>{{ pago.get_tipo_pago_display }}</td>
+      <td>S/ {{ pago.monto_programado }}</td>
+      <td>S/ {{ pago.monto_pagado }}</td>
+      <td>{{ pago.fecha_vencimiento }}</td>
+      <td>{{ pago.fecha_pago|default:"-" }}</td>
+      <td>{{ pago.get_estado_display }}</td>
+      <td>{{ pago.observacion|truncatewords:5 }}</td>
+      <td><a href="{% url 'matriculas:editar_pago' pago.id %}">Editar</a></td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="9">No hay pagos registrados.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+<a href="{% url 'matriculas:matricula_detail' matricula.id %}" class="btn btn-secondary">Volver a matrícula</a>
+{% endblock %}

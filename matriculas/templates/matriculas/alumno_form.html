@@ -1,19 +1,21 @@
 {% extends 'base.html' %}
+{% load form_tags %}
 
 {% block title %}Registrar Alumno{% endblock %}
-{% load form_tags %}
 
 {% block content %}
 <div class="form-container">
-    <h3 class="mb-4 text-center text-primary">Registrar Nuevo Alumno</h3>
+    <h3 class="text-center text-primary mb-4">
+        <i class="bi bi-person-plus-fill"></i> Registrar Nuevo Alumno
+    </h3>
 
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
 
         <!-- Datos Personales -->
-        <div class="card">
+        <div class="card shadow-sm mb-4">
             <div class="card-header bg-primary text-white">
-                Datos Personales
+                <i class="bi bi-person-vcard"></i> Datos Personales
             </div>
             <div class="card-body row g-3">
                 <div class="col-md-6">
@@ -34,7 +36,7 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">{{ form.sexo_data.label }}</label>
-                    {{ form.sexo_data|add_class:"form-control" }}
+                    {{ form.sexo_data|add_class:"form-select" }}
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">{{ form.grado_estudios.label }}</label>
@@ -51,10 +53,10 @@
             </div>
         </div>
 
-        <!-- Contacto -->
-        <div class="card">
+        <!-- Información de Contacto -->
+        <div class="card shadow-sm mb-4">
             <div class="card-header bg-secondary text-white">
-                Información de Contacto
+                <i class="bi bi-telephone-fill"></i> Información de Contacto
             </div>
             <div class="card-body row g-3">
                 <div class="col-md-6">
@@ -68,10 +70,10 @@
             </div>
         </div>
 
-        <!-- Fotos -->
-        <div class="card">
+        <!-- Fotografías -->
+        <div class="card shadow-sm mb-4">
             <div class="card-header bg-info text-white">
-                Fotografías del Alumno
+                <i class="bi bi-camera-fill"></i> Fotografías del Alumno
             </div>
             <div class="card-body row g-3">
                 <div class="col-md-4">
@@ -91,15 +93,19 @@
 
         <!-- Errores globales -->
         {% if form.non_field_errors %}
-            <div class="alert alert-danger mt-3">
-                {{ form.non_field_errors }}
-            </div>
+        <div class="alert alert-danger mt-3">
+            {{ form.non_field_errors }}
+        </div>
         {% endif %}
 
         <!-- Botones -->
         <div class="text-end mt-4">
-            <a href="{% url 'matriculas:alumno_list' %}" class="btn btn-outline-secondary me-2">Cancelar</a>
-            <button type="submit" class="btn btn-success">Guardar Alumno</button>
+            <a href="{% url 'matriculas:alumno_list' %}" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-x-circle"></i> Cancelar
+            </a>
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-check-circle"></i> Guardar Alumno
+            </button>
         </div>
     </form>
 </div>
@@ -107,8 +113,7 @@
 
 {% block extra_js %}
 <script>
-    // Activar Select2 si quieres estilizar campos largos
-    $(document).ready(function() {
+    $(document).ready(function () {
         $('select').select2({
             width: '100%',
             theme: 'bootstrap-5'

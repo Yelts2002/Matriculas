@@ -4,27 +4,48 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="mb-4">Detalle del Apoderado</h2>
+    <h2 class="mb-4 text-primary">
+        👨‍👧 Detalle del Apoderado
+    </h2>
 
-    <div class="card mb-3">
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">{{ apoderado.nombre_completo }}</h5>
+        </div>
         <div class="card-body">
-            <h5 class="card-title">{{ apoderado.nombre_completo }}</h5>
-            <p class="card-text"><strong>DNI:</strong> {{ apoderado.dni }}</p>
-            <p class="card-text"><strong>Teléfono:</strong> {{ apoderado.telefono }}</p>
-            <p class="card-text"><strong>Correo:</strong> {{ apoderado.correo }}</p>
-            <p class="card-text"><strong>Parentesco:</strong> {{ apoderado.parentesco }}</p>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p class="mb-1"><strong>DNI:</strong> {{ apoderado.dni }}</p>
+                    <p class="mb-1"><strong>Celular:</strong> {{ apoderado.celular }}</p>
+                    <p class="mb-1"><strong>Parentesco:</strong> {{ apoderado.parentesco }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="mb-1"><strong>Dirección:</strong></p>
+                    <p class="text-muted">{{ apoderado.direccion }}</p>
+                    <p class="mb-1"><strong>Fecha de registro:</strong> {{ apoderado.fecha_registro|date:"d/m/Y H:i" }}
+                    </p>
+                </div>
+            </div>
 
-            {% if apoderado.alumno %}
-            <p class="card-text"><strong>Alumno asociado:</strong>
-                <a href="{% url 'matriculas:alumno_detail' apoderado.alumno.pk %}">
-                    {{ apoderado.alumno.nombres_completos }}
-                </a>
-            </p>
-
+            {% if apoderado.alumnos.exists %}
+            <hr>
+            <h6 class="text-secondary">👦 Apoderado de:</h6>
+            <ul class="list-group list-group-flush">
+                {% for alumno in apoderado.alumnos.all %}
+                <li class="list-group-item">
+                    <i class="bi bi-person-fill text-primary"></i>
+                    <a href="{% url 'matriculas:alumno_detail' alumno.pk %}">
+                        {{ alumno.nombres_completos }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
             {% endif %}
         </div>
     </div>
 
-    <a href="{% url 'matriculas:apoderado_list' %}" class="btn btn-secondary">⬅ Volver a la lista</a>
+    <a href="{% url 'matriculas:apoderado_list' %}" class="btn btn-outline-secondary">
+        ⬅ Volver a la lista
+    </a>
 </div>
 {% endblock %}

@@ -29,7 +29,14 @@ urlpatterns = [
     path('matriculas/registrar/<int:alumno_id>/', views.MatriculaCreateView.as_view(), name='matricula_create_alumno'),
     path('matriculas/<int:pk>/', views.MatriculaDetailView.as_view(), name='matricula_detail'),
     path('matriculas/<int:pk>/editar/', views.MatriculaUpdateView.as_view(), name='matricula_update'),
-    path('matriculas/ficha/<int:pk>/pdf/', ficha_matricula_pdf, name='ficha_matricula_pdf'),
+    path('matriculas/ficha/<int:pk>/pdf/', views.ficha_matricula_pdf, name='ficha_matricula_pdf'),
+    path('matriculas/eliminar/<int:pk>/', views.MatriculaDeleteView.as_view(), name='matricula_delete'),
+
+    # Pagos
+    path('pagos/matricula/<int:matricula_id>/', views.lista_pagos_matricula, name='lista_pagos_matricula'),
+    path('pagos/matricula/<int:matricula_id>/registrar/', views.registrar_pago, name='registrar_pago'),
+    path('pagos/editar/<int:pago_id>/', views.editar_pago, name='editar_pago'),
+    path('pagos/resumen/', views.resumen_general_pagos, name='resumen_general_pagos'),
 
     # AJAX
     path('ajax/apoderado-por-alumno/', views.obtener_apoderado_por_alumno, name='ajax_apoderado_por_alumno'),

@@ -272,7 +272,7 @@ class MatriculaForm(forms.ModelForm):
 
     class Meta:
         model = Matricula
-        fields = ['alumno', 'apoderado', 'monto', 'cuotas', 'modalidad', 'ciclo', 'turno', 'horario']
+        fields = ['alumno', 'apoderado', 'monto', 'cuotas', 'modalidad', 'ciclo', 'turno', 'horario', 'estado', 'tipo_alumno']
         widgets = {
             'alumno': forms.Select(attrs={
                 'class': 'form-select select2',
@@ -299,6 +299,8 @@ class MatriculaForm(forms.ModelForm):
                 'onchange': 'updateHorarios()'
             }),
             'horario': forms.Select(attrs={'class': 'form-select'}),
+            'estado': forms.Select(attrs={'class': 'form-select'}),
+            'tipo_alumno': forms.Select(attrs={'class': 'form-select'}),
         }
         labels = {
             'monto': 'Monto total (S/)',
@@ -369,3 +371,17 @@ class ReactivarMatriculaForm(forms.Form):
                 self.fields['nuevo_horario'].queryset = Horario.objects.filter(turno_id=turno_id)
             except (ValueError, TypeError):
                 pass
+
+class PagoForm(forms.ModelForm):
+    class Meta:
+        model = Pago
+        fields = [
+            'numero_cuota', 'tipo_pago', 'monto_programado',
+            'monto_pagado', 'fecha_vencimiento', 'fecha_pago',
+            'estado', 'observacion'
+        ]
+        widgets = {
+            'fecha_vencimiento': forms.DateInput(attrs={'type': 'date'}),
+            'fecha_pago': forms.DateInput(attrs={'type': 'date'}),
+            'observacion': forms.Textarea(attrs={'rows': 2}),
+        }

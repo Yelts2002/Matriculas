@@ -13,7 +13,8 @@
         <div class="card-body">
             <form method="get" class="row g-2">
                 <div class="col-md-10">
-                    <input type="text" class="form-control" name="search" placeholder="Buscar por alumno o código..." value="{{ request.GET.search }}">
+                    <input type="text" class="form-control" name="search" placeholder="Buscar por alumno o código..."
+                        value="{{ request.GET.search }}">
                 </div>
                 <div class="col-md-2 text-end">
                     <button class="btn btn-primary w-100" type="submit">Buscar</button>
@@ -25,7 +26,7 @@
     <div class="table-responsive">
         <table class="table table-striped align-middle">
             <thead>
-                <tr>
+                <tr >
                     <th>Código</th>
                     <th>Alumno</th>
                     <th>Apoderado</th>
@@ -36,15 +37,20 @@
             </thead>
             <tbody>
                 {% for matricula in matriculas %}
-                <tr>
+                <tr data-id="{{ matricula.id }}">
                     <td>{{ matricula.codigo }}</td>
                     <td>{{ matricula.alumno.nombres_completos }}</td>
                     <td>{{ matricula.apoderado.nombre_completo }}</td>
                     <td>{{ matricula.ciclo }}</td>
                     <td>{{ matricula.turno }}</td>
                     <td>
-                        <a href="{% url 'matriculas:matricula_detail' matricula.pk %}" class="btn btn-sm btn-info">Ver</a>
-                        <a href="{% url 'matriculas:matricula_update' matricula.pk %}" class="btn btn-sm btn-warning">Editar</a>
+                        <a href="{% url 'matriculas:matricula_detail' matricula.pk %}"
+                            class="btn btn-sm btn-info">Ver</a>
+                        <a href="{% url 'matriculas:matricula_update' matricula.pk %}"
+                            class="btn btn-sm btn-warning">Editar</a>
+                        <button class="btn btn-danger btn-sm btn-delete-matricula" data-id="{{ matricula.id }}"
+                            data-nombre="{{ matricula.codigo }}">Eliminar
+                        </button>
                     </td>
                 </tr>
                 {% empty %}

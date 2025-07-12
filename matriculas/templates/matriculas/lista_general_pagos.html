@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Resumen General de Pagos{% endblock %}
+
+{% block content %}
+<h2>📊 Resumen General de Pagos</h2>
+
+<table class="table table-bordered table-hover mt-4">
+    <thead class="table-primary">
+        <tr>
+            <th>Código</th>
+            <th>Alumno</th>
+            <th>Total Cuotas</th>
+            <th>Cuotas Pagadas</th>
+            <th>Cuotas Pendientes</th>
+            <th>Monto Total S/</th>
+            <th>Monto Pagado S/</th>
+            <th>Opciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for matricula in matriculas %}
+        <tr>
+            <td>{{ matricula.codigo }}</td>
+            <td>{{ matricula.alumno.nombres_completos }}</td>
+            <td>{{ matricula.total_pagos }}</td>
+            <td>{{ matricula.cuotas_pagadas }}</td>
+            <td>{{ matricula.cuotas_pendientes }}</td>
+            <td>{{ matricula.monto_total|default:0|floatformat:2 }}</td>
+            <td>{{ matricula.monto_pagado|default:0|floatformat:2 }}</td>
+            <td>
+                <a class="btn btn-sm btn-info" href="{% url 'matriculas:lista_pagos_matricula' matricula.id %}">
+                    Ver Detalle
+                </a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="8" class="text-center">No hay registros de pagos aún.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
