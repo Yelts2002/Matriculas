@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalle de Matrícula{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Detalle de Matrícula</h2>
+
+    <table class="table table-bordered">
+        <tr>
+            <th>Código</th>
+            <td>{{ matricula.codigo }}</td>
+        </tr>
+        <tr>
+            <th>Alumno</th>
+            <td>{{ matricula.alumno.nombres_completos }}</td>
+        </tr>
+        <tr>
+            <th>Apoderado</th>
+            <td>{{ matricula.apoderado.nombre_completo }}</td>
+        </tr>
+        <tr>
+            <th>Ciclo</th>
+            <td>{{ matricula.ciclo }}</td>
+        </tr>
+        <tr>
+            <th>Turno</th>
+            <td>{{ matricula.turno }}</td>
+        </tr>
+        <tr>
+            <th>Horario</th>
+            <td>{{ matricula.horario }}</td>
+        </tr>
+        <tr>
+            <th>Fecha</th>
+            <td>{{ matricula.fecha_registro|date:"d/m/Y H:i" }}</td>
+        </tr>
+    </table>
+
+    <a href="{% url 'matriculas:matricula_list' %}" class="btn btn-secondary">Volver</a>
+    <a href="{% url 'matriculas:matricula_update' matricula.pk %}" class="btn btn-warning">Editar</a>
+    <a href="{% url 'matriculas:ficha_matricula_pdf' matricula.pk %}" target="_blank" class="btn btn-success">Exportar PDF</a>
+</div>
+{% endblock %}

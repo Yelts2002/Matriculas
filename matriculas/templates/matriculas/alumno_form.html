@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Registrar Alumno{% endblock %}
+{% load form_tags %}
+
+{% block content %}
+<div class="form-container">
+    <h3 class="mb-4 text-center text-primary">Registrar Nuevo Alumno</h3>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Datos Personales -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                Datos Personales
+            </div>
+            <div class="card-body row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">{{ form.nombres_completos.label }}</label>
+                    {{ form.nombres_completos|add_class:"form-control" }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">{{ form.dni.label }}</label>
+                    {{ form.dni|add_class:"form-control" }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">{{ form.fecha_nacimiento.label }}</label>
+                    {{ form.fecha_nacimiento|add_class:"form-control" }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">{{ form.sexo.label }}</label>
+                    {{ form.sexo|add_class:"form-select" }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">{{ form.sexo_data.label }}</label>
+                    {{ form.sexo_data|add_class:"form-control" }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">{{ form.grado_estudios.label }}</label>
+                    {{ form.grado_estudios|add_class:"form-select" }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">{{ form.colegio_de_procedencia.label }}</label>
+                    {{ form.colegio_de_procedencia|add_class:"form-control" }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">{{ form.carrera_tentativa.label }}</label>
+                    {{ form.carrera_tentativa|add_class:"form-select" }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Contacto -->
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                Información de Contacto
+            </div>
+            <div class="card-body row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">{{ form.celular_llamadas.label }}</label>
+                    {{ form.celular_llamadas|add_class:"form-control" }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">{{ form.numero_whatsapp.label }}</label>
+                    {{ form.numero_whatsapp|add_class:"form-control" }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Fotos -->
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                Fotografías del Alumno
+            </div>
+            <div class="card-body row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">{{ form.foto_previa.label }}</label>
+                    {{ form.foto_previa|add_class:"form-control" }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">{{ form.foto_frente.label }}</label>
+                    {{ form.foto_frente|add_class:"form-control" }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">{{ form.foto_corte.label }}</label>
+                    {{ form.foto_corte|add_class:"form-control" }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Errores globales -->
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger mt-3">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <!-- Botones -->
+        <div class="text-end mt-4">
+            <a href="{% url 'matriculas:alumno_list' %}" class="btn btn-outline-secondary me-2">Cancelar</a>
+            <button type="submit" class="btn btn-success">Guardar Alumno</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Activar Select2 si quieres estilizar campos largos
+    $(document).ready(function() {
+        $('select').select2({
+            width: '100%',
+            theme: 'bootstrap-5'
+        });
+    });
+</script>
+{% endblock %}

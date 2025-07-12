@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if object %}Editar{% else %}Registrar{% endif %} Turno{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{% if object %}Editar{% else %}Registrar{% endif %} Turno</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="row">
+            {% for field in form %}
+            <div class="col-md-6 mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                <small class="form-text text-muted">{{ field.help_text }}</small>
+                {% endif %}
+                {% for error in field.errors %}
+                <div class="invalid-feedback" style="display: block;">
+                    {{ error }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a href="{% url 'matriculas:turno_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

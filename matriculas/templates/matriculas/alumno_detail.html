@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalle del Alumno{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Detalle del Alumno</h4>
+        </div>
+        <div class="card-body">
+
+            <div class="row">
+                <!-- Información personal -->
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-light">
+                            <strong>Información Personal</strong>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Código:</strong> {{ alumno.codigo }}</p>
+                            <p><strong>Nombre:</strong> {{ alumno.nombres_completos }}</p>
+                            <p><strong>DNI:</strong> {{ alumno.dni }}</p>
+                            <p><strong>Sexo:</strong> {{ alumno.get_sexo_display }}</p>
+                            <p><strong>Fecha de Nacimiento:</strong> {{ alumno.fecha_nacimiento|date:"d/m/Y" }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contacto y académico -->
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-light">
+                            <strong>Contacto y Académico</strong>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Celular:</strong> {{ alumno.celular_llamadas }}</p>
+                            <p><strong>WhatsApp:</strong> {{ alumno.numero_whatsapp }}</p>
+                            <p><strong>Grado de Estudios:</strong> {{ alumno.get_grado_estudios_display }}</p>
+                            <p><strong>Colegio de Procedencia:</strong> {{ alumno.colegio_de_procedencia }}</p>
+                            <p><strong>Carrera Tentativa:</strong> {{ alumno.carrera_tentativa }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fotos -->
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <strong>Fotografías</strong>
+                        </div>
+                        <div class="card-body row text-center">
+                            {% if alumno.foto_previa %}
+                            <div class="col-md-4">
+                                <p class="mb-1"><strong>Foto Previa</strong></p>
+                                <img src="{{ alumno.foto_previa.url }}" class="img-thumbnail" style="max-height: 200px;">
+                            </div>
+                            {% endif %}
+                            {% if alumno.foto_frente %}
+                            <div class="col-md-4">
+                                <p class="mb-1"><strong>Foto de Frente</strong></p>
+                                <img src="{{ alumno.foto_frente.url }}" class="img-thumbnail" style="max-height: 200px;">
+                            </div>
+                            {% endif %}
+                            {% if alumno.foto_corte %}
+                            <div class="col-md-4">
+                                <p class="mb-1"><strong>Foto con Corte</strong></p>
+                                <img src="{{ alumno.foto_corte.url }}" class="img-thumbnail" style="max-height: 200px;">
+                            </div>
+                            {% endif %}
+                            {% if not alumno.foto_previa and not alumno.foto_frente and not alumno.foto_corte %}
+                                <p class="text-muted">No hay fotografías registradas.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{% url 'matriculas:alumno_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Volver
+                </a>
+                <div class="btn-group">
+                    <a href="{% url 'matriculas:alumno_update' alumno.pk %}" class="btn btn-warning">
+                        <i class="bi bi-pencil-square"></i> Editar
+                    </a>
+                    <a href="{% url 'matriculas:asignar_apoderado' alumno.pk %}" class="btn btn-info text-white">
+                        <i class="bi bi-person-plus"></i> Asignar Apoderado
+                    </a>
+                    <a href="{% url 'matriculas:matricula_create' %}?alumno_id={{ alumno.pk }}" class="btn btn-success">
+                        <i class="bi bi-journal-plus"></i> Matricular
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

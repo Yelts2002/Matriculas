@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista de Matrículas{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Lista de Matrículas</h2>
+        <a href="{% url 'matriculas:matricula_create' %}" class="btn btn-success">➕ Nueva Matrícula</a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-2">
+                <div class="col-md-10">
+                    <input type="text" class="form-control" name="search" placeholder="Buscar por alumno o código..." value="{{ request.GET.search }}">
+                </div>
+                <div class="col-md-2 text-end">
+                    <button class="btn btn-primary w-100" type="submit">Buscar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Alumno</th>
+                    <th>Apoderado</th>
+                    <th>Ciclo</th>
+                    <th>Turno</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for matricula in matriculas %}
+                <tr>
+                    <td>{{ matricula.codigo }}</td>
+                    <td>{{ matricula.alumno.nombres_completos }}</td>
+                    <td>{{ matricula.apoderado.nombre_completo }}</td>
+                    <td>{{ matricula.ciclo }}</td>
+                    <td>{{ matricula.turno }}</td>
+                    <td>
+                        <a href="{% url 'matriculas:matricula_detail' matricula.pk %}" class="btn btn-sm btn-info">Ver</a>
+                        <a href="{% url 'matriculas:matricula_update' matricula.pk %}" class="btn btn-sm btn-warning">Editar</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted">No hay matrículas registradas.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if is_paginated %}
+    <nav aria-label="Paginación">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+            </li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

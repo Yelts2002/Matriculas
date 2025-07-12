@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista de Alumnos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Listado de Alumnos</h2>
+    <a href="{% url 'matriculas:alumno_create' %}" class="btn btn-primary">Nuevo Alumno</a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr data-id="{{ alumno.id }}">
+                <th>Código</th>
+                <th>Nombre Completo</th>
+                <th>DNI</th>
+                <th>Grado</th>
+                <th>Celular</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for alumno in object_list %}
+            <tr>
+                <td>{{ alumno.codigo }}</td>
+                <td>{{ alumno.nombres_completos }}</td>
+                <td>{{ alumno.dni }}</td>
+                <td>{{ alumno.get_grado_estudios_display }}</td>
+                <td>{{ alumno.celular_llamadas }}</td>
+                <td>
+                    <a href="{% url 'matriculas:alumno_detail' alumno.pk %}" class="btn btn-sm btn-info">Ver</a>
+                    <a href="{% url 'matriculas:alumno_update' alumno.pk %}" class="btn btn-sm btn-warning">Editar</a>
+                    <button class="btn btn-danger btn-sm btn-delete-alumno" data-id="{{ alumno.id }}"
+                        data-nombre="{{ alumno.nombres_completos }}">
+                        Eliminar
+                    </button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">No hay alumnos registrados</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalle del Apoderado{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Detalle del Apoderado</h2>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">{{ apoderado.nombre_completo }}</h5>
+            <p class="card-text"><strong>DNI:</strong> {{ apoderado.dni }}</p>
+            <p class="card-text"><strong>Teléfono:</strong> {{ apoderado.telefono }}</p>
+            <p class="card-text"><strong>Correo:</strong> {{ apoderado.correo }}</p>
+            <p class="card-text"><strong>Parentesco:</strong> {{ apoderado.parentesco }}</p>
+
+            {% if apoderado.alumno %}
+            <p class="card-text"><strong>Alumno asociado:</strong>
+                <a href="{% url 'matriculas:alumno_detail' apoderado.alumno.pk %}">
+                    {{ apoderado.alumno.nombres_completos }}
+                </a>
+            </p>
+
+            {% endif %}
+        </div>
+    </div>
+
+    <a href="{% url 'matriculas:apoderado_list' %}" class="btn btn-secondary">⬅ Volver a la lista</a>
+</div>
+{% endblock %}

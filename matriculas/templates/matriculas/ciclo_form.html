@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if object %}Editar{% else %}Registrar{% endif %} Ciclo{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2>{% if object %}Editar{% else %}Registrar{% endif %} Ciclo</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="{{ form.nombre.id_for_label }}" class="form-label">Nombre del Ciclo</label>
+            {{ form.nombre }}
+            {% for error in form.nombre.errors %}
+            <div class="invalid-feedback" style="display: block;">
+                {{ error }}
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Turnos Disponibles</label>
+            <div class="row">
+                {% for turno in form.turnos %}
+                <div class="col-md-4">
+                    <div class="form-check">
+                        {{ turno }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{% if object %}{% url 'matriculas:ciclo_list' %}{% else %}{% url 'matriculas:ciclo_list' %}{% endif %}" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-primary">Guardar</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if object %}Editar{% else %}Registrar{% endif %} Matrícula{% endblock %}
+{% load form_tags %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">{% if object %}Editar{% else %}Registrar{% endif %} Matrícula</h4>
+        </div>
+        <div class="card-body">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="row">
+                    {% for field in form %}
+                        {% if not field.is_hidden %}
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label fw-semibold">{{ field.label }}</label>
+                                {{ field|add_class:"form-control" }}
+                                {% if field.help_text %}
+                                    <div class="form-text text-muted small">{{ field.help_text }}</div>
+                                {% endif %}
+                                {% for error in field.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ field }}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="d-flex justify-content-between">
+                    <button type="submit" class="btn btn-success">Guardar</button>
+                    <a href="{% if object %}{% url 'matriculas:matricula_detail' object.pk %}{% else %}{% url 'matriculas:matricula_list' %}{% endif %}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const alumnoSelect = $('#id_alumno');
+    const apoderadoSelect = $('#id_apoderado');
+
+    alumnoSelect.select2({
+        placeholder: 'Buscar alumno...',
+        allowClear: true,
+        ajax: {
+            url: '/ajax/buscar-alumnos/',
+            dataType: 'json',
+            delay: 250,
+            data: params => ({ q: params.term }),
+            processResults: data => ({
+                results: data.map(alumno => ({ id: alumno.id, text: alumno.nombre }))
+            })
+        },
+        minimumInputLength: 2
+    });
+
+    apoderadoSelect.select2({
+        placeholder: 'Buscar apoderado...',
+        allowClear: true,
+        ajax: {
+            url: '/ajax/buscar-apoderados/',
+            dataType: 'json',
+            delay: 250,
+            data: params => ({ q: params.term }),
+            processResults: data => ({
+                results: data.map(apoderado => ({ id: apoderado.id, text: apoderado.nombre }))
+            })
+        },
+        minimumInputLength: 2
+    });
+
+    alumnoSelect.on('select2:select', function (e) {
+        const alumnoId = e.params.data.id;
+        fetch(`/ajax/apoderado-por-alumno/?alumno_id=${alumnoId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.id) {
+                    const exists = apoderadoSelect.find(`option[value='${data.id}']`).length > 0;
+                    if (!exists) {
+                        const newOption = new Option(data.nombre, data.id, true, true);
+                        apoderadoSelect.append(newOption);
+                    }
+                    apoderadoSelect.val(data.id).trigger('change.select2');
+                } else {
+                    apoderadoSelect.val(null).trigger('change.select2');
+                }
+            });
+    });
+
+    alumnoSelect.on('select2:clear', function () {
+        apoderadoSelect.val(null).trigger('change.select2');
+    });
+
+    apoderadoSelect.on('select2:select', function (e) {
+        const apoderadoId = e.params.data.id;
+        fetch(`/ajax/alumnos-por-apoderado/?apoderado_id=${apoderadoId}`)
+            .then(res => res.json())
+            .then(data => {
+                alumnoSelect.empty();
+                data.alumnos.forEach(alumno => {
+                    const option = new Option(alumno.nombre, alumno.id, false, false);
+                    alumnoSelect.append(option);
+                });
+                alumnoSelect.trigger('change.select2');
+            });
+    });
+
+    apoderadoSelect.on('select2:clear', function () {
+        alumnoSelect.val(null).trigger('change.select2');
+    });
+});
+</script>
+{% endblock %}

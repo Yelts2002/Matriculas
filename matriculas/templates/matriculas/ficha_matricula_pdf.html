@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 12px; }
+        h2 { text-align: center; }
+        .section { margin-bottom: 20px; }
+        .label { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2>Ficha de Matrícula</h2>
+    
+    <div class="section">
+        <div class="label">Código de Matrícula:</div>
+        {{ matricula.codigo }}
+    </div>
+
+    <div class="section">
+        <div class="label">Alumno:</div>
+        {{ matricula.alumno.nombres_completos }} ({{ matricula.alumno.codigo }})<br>
+        DNI: {{ matricula.alumno.dni }}<br>
+        Grado: {{ matricula.alumno.get_grado_estudios_display }}
+    </div>
+
+    <div class="section">
+        <div class="label">Apoderado:</div>
+        {{ matricula.apoderado.nombre_completo }} ({{ matricula.apoderado.codigo }})<br>
+        Parentesco: {{ matricula.apoderado.parentesco }}
+    </div>
+
+    <div class="section">
+        <div class="label">Datos de Matrícula:</div>
+        Ciclo: {{ matricula.ciclo.nombre }}<br>
+        Turno: {{ matricula.turno.nombre }}<br>
+        Horario: {{ matricula.horario }}<br>
+        Modalidad: {{ matricula.get_modalidad_display }}<br>
+        Tipo de Alumno: {{ matricula.get_estado_display }}<br>
+        Fecha: {{ matricula.fecha_matricula }}
+    </div>
+</body>
+</html>
