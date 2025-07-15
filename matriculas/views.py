@@ -10,6 +10,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Sum, Q
+from django.views import View
 
 from .models import *
 from .forms import *
@@ -151,12 +152,14 @@ class AlumnoDetailView(DetailView):
     template_name = 'matriculas/alumno_detail.html'
     context_object_name = 'alumno'
 
-class AlumnoDeleteView(DeleteView):
-    model = Alumno
-    def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.delete()
-        return JsonResponse({'success': True})
+class AlumnoDeleteView(View):
+    def post(self, request, pk):
+        try:
+            alumno = Alumno.objects.get(pk=pk)
+            alumno.delete()
+            return JsonResponse({'success': True})
+        except Alumno.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Alumno no encontrado'}, status=404)
 
 # Vistas para Apoderados
 class ApoderadoListView(ListView):

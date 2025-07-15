@@ -139,12 +139,9 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <form id="deleteForm" method="post">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">
-                            <i class="bi bi-trash-fill me-1"></i> Eliminar
-                        </button>
-                    </form>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">
+                        <i class="bi bi-trash-fill me-1"></i> Eliminar
+                    </button>
                 </div>
             </div>
         </div>
@@ -157,113 +154,99 @@
         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
         crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 
-<script>
-    let idSeleccionado = null;
-    let tipoEntidad = null;
+    <script>
+        let idSeleccionado = null;
+        let tipoEntidad = null;
 
-    // Mostrar el modal de confirmación con los datos
-    function configurarModalEliminar(id, nombre, tipo) {
-        idSeleccionado = id;
-        tipoEntidad = tipo;
-        document.getElementById('nombreAEliminar').textContent = nombre;
-        new bootstrap.Modal(document.getElementById('modalEliminar')).show();
-    }
-
-    // Botones de eliminar alumno
-    document.querySelectorAll('.btn-delete-alumno').forEach(btn => {
-        btn.addEventListener('click', () => {
-            configurarModalEliminar(btn.dataset.id, btn.dataset.nombre, 'alumno');
-        });
-    });
-
-    // Botones de eliminar apoderado
-    document.querySelectorAll('.btn-delete-apoderado').forEach(btn => {
-        btn.addEventListener('click', () => {
-            configurarModalEliminar(btn.dataset.id, btn.dataset.nombre, 'apoderado');
-        });
-    });
-
-    // Botones de eliminar matrícula
-    document.querySelectorAll('.btn-delete-matricula').forEach(btn => {
-        btn.addEventListener('click', () => {
-            configurarModalEliminar(btn.dataset.id, btn.dataset.nombre, 'matricula');
-        });
-    });
-
-    // Confirmar eliminación
-    document.getElementById('btnConfirmarEliminar').addEventListener('click', () => {
-        let url = '';
-        switch (tipoEntidad) {
-            case 'alumno':
-                url = `/alumnos/eliminar/${idSeleccionado}/`;
-                break;
-            case 'apoderado':
-                url = `/apoderados/eliminar/${idSeleccionado}/`;
-                break;
-            case 'matricula':
-                url = `/matriculas/eliminar/${idSeleccionado}/`;
-                break;
+        function configurarModalEliminar(id, nombre, tipo) {
+            idSeleccionado = id;
+            tipoEntidad = tipo;
+            document.getElementById('entityName').textContent = nombre;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
         }
 
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-            },
-        })
-            .then(response => {
-                if (response.ok) {
-                    // Elimina la fila de la tabla
-                    const fila = document.querySelector(`tr[data-id="${idSeleccionado}"]`);
-                    if (fila) fila.remove();
+        document.querySelectorAll('.btn-delete-alumno').forEach(btn => {
+            btn.addEventListener('click', () => {
+                configurarModalEliminar(btn.dataset.id, btn.dataset.nombre, 'alumno');
+            });
+        });
 
-                    // Oculta el modal
-                    bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide();
-                } else {
-                    alert('❌ Error al eliminar');
+        document.querySelectorAll('.btn-delete-apoderado').forEach(btn => {
+            btn.addEventListener('click', () => {
+                configurarModalEliminar(btn.dataset.id, btn.dataset.nombre, 'apoderado');
+            });
+        });
+
+        document.querySelectorAll('.btn-delete-matricula').forEach(btn => {
+            btn.addEventListener('click', () => {
+                configurarModalEliminar(btn.dataset.id, btn.dataset.nombre, 'matricula');
+            });
+        });
+
+        // Confirmar eliminación AJAX
+        document.getElementById('btnConfirmarEliminar').addEventListener('click', () => {
+            let url = '';
+            switch (tipoEntidad) {
+                case 'alumno':
+                    url = `/alumnos/eliminar/${idSeleccionado}/`;
+                    break;
+                case 'apoderado':
+                    url = `/apoderados/eliminar/${idSeleccionado}/`;
+                    break;
+                case 'matricula':
+                    url = `/matriculas/eliminar/${idSeleccionado}/`;
+                    break;
+            }
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
                 }
-            });
-    });
-
-    // Initialize Select2
-    $(document).ready(function () {
-        $('.select2').select2({
-            theme: 'bootstrap-5',
-            width: '100%',
-            placeholder: 'Seleccione una opción'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const fila = document.querySelector(`tr[data-id="${idSeleccionado}"]`);
+                        if (fila) fila.remove();
+                        bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+                    } else {
+                        alert('❌ Error al eliminar: ' + (data.error || 'desconocido'));
+                    }
+                })
+                .catch(error => {
+                    alert('❌ Error al eliminar');
+                    console.error(error);
+                });
         });
 
-        // Tooltips
-        $('[data-bs-toggle="tooltip"]').tooltip();
-
-        // Popovers
-        $('[data-bs-toggle="popover"]').popover();
-    });
-
-    // Delete modal handler
-    document.addEventListener('DOMContentLoaded', function () {
-        const deleteModal = document.getElementById('deleteModal');
-        if (deleteModal) {
-            deleteModal.addEventListener('show.bs.modal', function (event) {
-                const button = event.relatedTarget;
-                const entityName = button.getAttribute('data-entity-name');
-                const deleteUrl = button.getAttribute('data-delete-url');
-
-                document.getElementById('entityName').textContent = entityName;
-                document.getElementById('deleteForm').action = deleteUrl;
+        // Tooltips y select2
+        $(document).ready(function () {
+            $('.select2').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                placeholder: 'Seleccione una opción'
             });
-        }
 
-        // Auto-dismiss alerts after 5 seconds
-        setTimeout(function () {
-            const alerts = document.querySelectorAll('.alert-dismissible');
-            alerts.forEach(function (alert) {
-                new bootstrap.Alert(alert).close();
-            });
-        }, 5000);
-    });
-</script>
+            $('[data-bs-toggle="tooltip"]').tooltip();
+            $('[data-bs-toggle="popover"]').popover();
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(function () {
+                document.querySelectorAll('.alert-dismissible').forEach(function (alert) {
+                    new bootstrap.Alert(alert).close();
+                });
+            }, 5000);
+        });
+    </script>
+
+
 </body>
 
 </html>

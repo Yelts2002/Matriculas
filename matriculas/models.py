@@ -211,14 +211,9 @@ class Apoderado(models.Model):
 
 class Matricula(models.Model):
     ESTADO_CHOICES = [
-        ('activa', 'Activa'), ('congelada', 'Congelada'), ('finalizada', 'Finalizada')
-    ]
-    MODALIDADES = [('presencial', 'Presencial'), ('virtual', 'Virtual')]
-    TIPOS_ALUMNO = [
-        ('regular', 'REGULAR'), ('promocion', 'PROMOCION'),
-        ('beca50', 'BECA 50%'), ('beca100', 'BECA 100%'),
-        ('fondo_social', 'FONDO SOCIAL'),
-    ]
+        ('activa', 'Activa'), ('congelada', 'Congelada'), ('finalizada', 'Finalizada'),]
+    MODALIDADES = [('presencial', 'Presencial'), ('virtual', 'Virtual'),]
+    TIPOS_ALUMNO = [ ('regular', 'REGULAR'), ('promocion', 'PROMOCION'), ('beca50', 'BECA 50%'), ('beca100', 'BECA 100%'), ('fondo_social', 'FONDO SOCIAL'),]
 
     codigo = models.CharField(max_length=10, unique=True, blank=True, editable=False)
     alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE, related_name='matriculas')
@@ -261,16 +256,12 @@ class Matricula(models.Model):
         """
         if self.estado != 'finalizada':
             raise ValidationError("Solo se pueden reactivar matrículas finalizadas")
-            
         if not nuevo_ciclo.activo:
             raise ValidationError("El nuevo ciclo no está activo")
-            
         if nuevo_turno not in nuevo_ciclo.turnos.all():
             raise ValidationError("El turno seleccionado no está disponible en este ciclo")
-            
         if nuevo_horario.turno != nuevo_turno:
             raise ValidationError("El horario no corresponde al turno seleccionado")
-            
         if not self.alumno.activo:
             self.alumno.activo = True
             self.alumno.save()
@@ -305,7 +296,7 @@ class Pago(models.Model):
     ]
 
     matricula = models.ForeignKey('Matricula', on_delete=models.CASCADE, related_name='pagos')
-    numero_cuota = models.IntegerField(null=True, blank=True)  # Si es cuota mensual
+    numero_cuota = models.IntegerField(null=True, blank=True)
     tipo_pago = models.CharField(max_length=20, choices=TIPO_PAGO)
     monto_programado = models.DecimalField(max_digits=10, decimal_places=2)
     monto_pagado = models.DecimalField(max_digits=10, decimal_places=2, default=0)
