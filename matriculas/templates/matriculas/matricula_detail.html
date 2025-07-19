@@ -3,42 +3,52 @@
 {% block title %}Detalle de Matrícula{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Detalle de Matrícula</h2>
+<div class="max-w-4xl mx-auto mt-10 bg-white shadow-md rounded-xl p-6">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">🎓 Detalle de Matrícula</h2>
 
-    <table class="table table-bordered">
-        <tr>
-            <th>Código</th>
-            <td>{{ matricula.codigo }}</td>
-        </tr>
-        <tr>
-            <th>Alumno</th>
-            <td>{{ matricula.alumno.nombres_completos }}</td>
-        </tr>
-        <tr>
-            <th>Apoderado</th>
-            <td>{{ matricula.apoderado.nombre_completo }}</td>
-        </tr>
-        <tr>
-            <th>Ciclo</th>
-            <td>{{ matricula.ciclo }}</td>
-        </tr>
-        <tr>
-            <th>Turno</th>
-            <td>{{ matricula.turno }}</td>
-        </tr>
-        <tr>
-            <th>Horario</th>
-            <td>{{ matricula.horario }}</td>
-        </tr>
-        <tr>
-            <th>Fecha</th>
-            <td>{{ matricula.fecha_registro|date:"d/m/Y H:i" }}</td>
-        </tr>
+    <table class="w-full table-auto border border-gray-300 rounded-lg overflow-hidden text-sm">
+        <tbody>
+            <tr class="border-b border-gray-200">
+                <th class="bg-gray-100 px-4 py-2 text-left font-semibold text-gray-700 w-1/3">Código</th>
+                <td class="px-4 py-2">{{ matricula.codigo }}</td>
+            </tr>
+            <tr class="border-b border-gray-200">
+                <th class="bg-gray-100 px-4 py-2 text-left font-semibold text-gray-700">Alumno</th>
+                <td class="px-4 py-2">{{ matricula.alumno.nombres_completos }}</td>
+            </tr>
+            <tr class="border-b border-gray-200">
+                <th class="bg-gray-100 px-4 py-2 text-left font-semibold text-gray-700">Apoderado</th>
+                <td class="px-4 py-2">{{ matricula.apoderado.nombre_completo }}</td>
+            </tr>
+            <tr class="border-b border-gray-200">
+                <th class="bg-gray-100 px-4 py-2 text-left font-semibold text-gray-700">Ciclo</th>
+                <td class="px-4 py-2">{{ matricula.ciclo }}</td>
+            </tr>
+            <tr class="border-b border-gray-200">
+                <th class="bg-gray-100 px-4 py-2 text-left font-semibold text-gray-700">Turno</th>
+                <td class="px-4 py-2">{{ matricula.turno }}</td>
+            </tr>
+            <tr class="border-b border-gray-200">
+                <th class="bg-gray-100 px-4 py-2 text-left font-semibold text-gray-700">Horario</th>
+                <td class="px-4 py-2">{{ matricula.horario }}</td>
+            </tr>
+            <tr>
+                <th class="bg-gray-100 px-4 py-2 text-left font-semibold text-gray-700">Fecha</th>
+                <td class="px-4 py-2">{{ matricula.fecha_registro|date:"d/m/Y H:i" }}</td>
+            </tr>
+        </tbody>
     </table>
 
-    <a href="{% url 'matriculas:matricula_list' %}" class="btn btn-secondary">Volver</a>
-    <a href="{% url 'matriculas:matricula_update' matricula.pk %}" class="btn btn-warning">Editar</a>
-    <a href="{% url 'matriculas:ficha_matricula_pdf' matricula.pk %}" target="_blank" class="btn btn-success">Exportar PDF</a>
+    <div class="flex justify-end gap-4 mt-6">
+        <a href="{% url 'matriculas:matricula_list' %}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded hover:bg-gray-200">
+            Volver
+        </a>
+        <a href="{% url 'matriculas:matricula_update' matricula.pk %}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded">
+            Editar
+        </a>
+        <a href="{% url 'matriculas:ficha_matricula_pdf' matricula.pk %}" target="_blank" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded">
+            Exportar PDF
+        </a>
+    </div>
 </div>
 {% endblock %}

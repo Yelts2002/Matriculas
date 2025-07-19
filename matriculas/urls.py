@@ -5,8 +5,10 @@ from .views import ficha_matricula_pdf  # asegúrate de importar la vista si no 
 app_name = 'matriculas'  # Esto define el namespace
 
 urlpatterns = [
-    path('', views.home, name='home'),
+    path('', views.dashboard_view, name='home'),
     
+    path('dashboard/', views.dashboard_view, name='dashboard'),
+
     # Alumnos
     path('alumnos/', views.AlumnoListView.as_view(), name='alumno_list'),
     path('alumnos/registrar/', views.AlumnoCreateView.as_view(), name='alumno_create'),

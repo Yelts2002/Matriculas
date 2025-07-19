@@ -3,35 +3,49 @@
 {% block title %}Lista de Turnos{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Listado de Turnos</h2>
-    <a href="{% url 'matriculas:turno_create' %}" class="btn btn-primary">Nuevo Turno</a>
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">Listado de Turnos</h2>
+    <a href="{% url 'matriculas:turno_create' %}" class="mt-4 md:mt-0 inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors">
+        <i class="bi bi-plus-circle mr-2"></i>Nuevo Turno
+    </a>
 </div>
 
-<div class="row">
+{% if object_list %}
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
     {% for turno in object_list %}
-    <div class="col-md-4 mb-4">
-        <div class="card">
-            <div class="card-header bg-info text-white">
-                <h5 class="mb-0">{{ turno.nombre }}</h5>
-            </div>
-            <div class="card-body">
-                <h6>Horarios:</h6>
-                <ul>
-                    {% for horario in turno.horarios.all %}
-                    <li>{{ horario.hora_inicio|time:"H:i" }} - {{ horario.hora_fin|time:"H:i" }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-            <div class="card-footer">
-                <a href="{% url 'matriculas:turno_update' turno.pk %}" class="btn btn-sm btn-warning">Editar</a>
-            </div>
+    <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow">
+        <div class="bg-blue-500 text-white px-4 py-3">
+            <h3 class="font-semibold text-lg">{{ turno.nombre }}</h3>
         </div>
-    </div>
-    {% empty %}
-    <div class="col-12">
-        <div class="alert alert-info">No hay turnos registrados</div>
+        <div class="p-4">
+            <h4 class="font-medium text-gray-700 mb-2">Horarios:</h4>
+            <ul class="space-y-1">
+                {% for horario in turno.horarios.all %}
+                <li class="flex items-center text-gray-600">
+                    <i class="bi bi-clock mr-2"></i>
+                    {{ horario.hora_inicio|time:"H:i" }} - {{ horario.hora_fin|time:"H:i" }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end">
+            <a href="{% url 'matriculas:turno_update' turno.pk %}" class="inline-flex items-center px-3 py-1 bg-yellow-500 text-white rounded-md text-sm hover:bg-yellow-600 transition-colors">
+                <i class="bi bi-pencil-square mr-1"></i>Editar
+            </a>
+        </div>
     </div>
     {% endfor %}
 </div>
+{% else %}
+<div class="bg-blue-50 border-l-4 border-blue-500 p-4">
+    <div class="flex">
+        <div class="flex-shrink-0">
+            <i class="bi bi-info-circle-fill text-blue-500"></i>
+        </div>
+        <div class="ml-3">
+            <p class="text-sm text-blue-700">No hay turnos registrados</p>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

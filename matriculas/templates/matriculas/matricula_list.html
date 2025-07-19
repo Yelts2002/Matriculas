@@ -3,85 +3,109 @@
 {% block title %}Lista de Matrículas{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Lista de Matrículas</h2>
-        <a href="{% url 'matriculas:matricula_create' %}" class="btn btn-success">➕ Nueva Matrícula</a>
+<div class="max-w-7xl mx-auto mt-8 px-4 sm:px-6 lg:px-8">
+
+    <!-- Encabezado y botón -->
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-semibold text-gray-800">Lista de Matrículas</h2>
+        <a href="{% url 'matriculas:matricula_create' %}"
+            class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 transition">
+            ➕ Nueva Matrícula
+        </a>
     </div>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="get" class="row g-2">
-                <div class="col-md-10">
-                    <input type="text" class="form-control" name="search" placeholder="Buscar por alumno o código..."
-                        value="{{ request.GET.search }}">
-                </div>
-                <div class="col-md-2 text-end">
-                    <button class="btn btn-primary w-100" type="submit">Buscar</button>
-                </div>
-            </form>
+    <!-- Buscador -->
+    <form method="get" class="mb-4 ">
+        <div class="flex rounded-md shadow-sm">
+            <input type="text" 
+                name="search"
+                placeholder="Buscar por alumno o código..."
+                value="{{ request.GET.search }}"
+                class="flex-1 px-4 py-2 border border-gray-300 rounded-l-md focus:ring-indigo-500 focus:border-indigo-500">
+            <button type="submit"
+                class="px-4 py-2 bg-blue-600 text-white rounded-r-md hover:bg-blue-700 transition">
+                Buscar
+            </button>
         </div>
-    </div>
+    </form>
 
-    <div class="table-responsive">
-        <table class="table table-striped align-middle">
-            <thead>
-                <tr >
-                    <th>Código</th>
-                    <th>Alumno</th>
-                    <th>Apoderado</th>
-                    <th>Ciclo</th>
-                    <th>Turno</th>
-                    <th>Acciones</th>
+    <!-- Tabla -->
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm text-left text-gray-700">
+            <thead class="bg-gray-800 text-white text-sm uppercase">
+                <tr>
+                    <th class="px-4 py-2">Código</th>
+                    <th class="px-4 py-2">Alumno</th>
+                    <th class="px-4 py-2">Apoderado</th>
+                    <th class="px-4 py-2">Ciclo</th>
+                    <th class="px-4 py-2">Estado</th>
+                    <th class="px-4 py-2">Turno</th>
+                    <th class="px-4 py-2 text-center">Acciones</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="divide-y divide-gray-100">
                 {% for matricula in matriculas %}
-                <tr data-id="{{ matricula.id }}">
-                    <td>{{ matricula.codigo }}</td>
-                    <td>{{ matricula.alumno.nombres_completos }}</td>
-                    <td>{{ matricula.apoderado.nombre_completo }}</td>
-                    <td>{{ matricula.ciclo }}</td>
-                    <td>{{ matricula.turno }}</td>
-                    <td>
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-2">{{ matricula.codigo }}</td>
+                    <td class="px-4 py-2">{{ matricula.alumno.nombres_completos }}</td>
+                    <td class="px-4 py-2">{{ matricula.apoderado.nombre_completo }}</td>
+                    <td class="px-4 py-2">{{ matricula.ciclo }}</td>
+                    <td class="px-4 py-2">{{ matricula.estado }}</td>
+                    <td class="px-4 py-2">{{ matricula.turno }}</td>
+                    <td class="px-4 py-2 text-center space-x-1">
                         <a href="{% url 'matriculas:matricula_detail' matricula.pk %}"
-                            class="btn btn-sm btn-info">Ver</a>
+                            class="inline-block px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition">
+                            Ver
+                        </a>
                         <a href="{% url 'matriculas:matricula_update' matricula.pk %}"
-                            class="btn btn-sm btn-warning">Editar</a>
-                        <button class="btn btn-danger btn-sm btn-delete-matricula" data-id="{{ matricula.id }}"
-                            data-nombre="{{ matricula.codigo }}">Eliminar
+                            class="inline-block px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600 transition">
+                            Editar
+                        </a>
+                        <button data-id="{{ matricula.id }}" data-nombre="{{ matricula.codigo }}"
+                            class="inline-block px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition btn-delete-matricula">
+                            Eliminar
                         </button>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="text-center text-muted">No hay matrículas registradas.</td>
+                    <td colspan="7" class="px-4 py-6 text-center text-gray-500">No hay matrículas registradas.</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 
+    <!-- Paginación -->
     {% if is_paginated %}
-    <nav aria-label="Paginación">
-        <ul class="pagination justify-content-center">
-            {% if page_obj.has_previous %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
-            </li>
-            {% endif %}
-            {% for num in page_obj.paginator.page_range %}
-            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-            </li>
-            {% endfor %}
-            {% if page_obj.has_next %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
-            </li>
-            {% endif %}
-        </ul>
-    </nav>
+    <div class="mt-6 flex justify-center space-x-2">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}"
+            class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">
+            Anterior
+        </a>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+        <a href="?page={{ num }}" class="px-3 py-1 rounded transition
+              {% if page_obj.number == num %}
+                bg-blue-600 text-white hover:bg-blue-700
+              {% else %}
+                bg-gray-200 text-gray-700 hover:bg-gray-300
+              {% endif %}">
+            {{ num }}
+        </a>
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}"
+            class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">
+            Siguiente
+        </a>
+        {% endif %}
+    </div>
     {% endif %}
+
+
 </div>
 {% endblock %}

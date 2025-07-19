@@ -21,7 +21,6 @@ class Ciclo(models.Model):
         return self.nombre
     
     def finalizar_ciclo(self):
-
         with transaction.atomic():
             matriculas_activas = self.matricula_set.filter(estado='activa')
             matriculas_activas.update(estado='finalizada')            
@@ -306,6 +305,12 @@ class Pago(models.Model):
     observacion = models.TextField(blank=True)
     usuario_registro = models.ForeignKey(User, on_delete=models.PROTECT, related_name='pagos_registrados')
     fecha_registro = models.DateTimeField(auto_now_add=True)
+    
+    def save(self, *args, **kwargs):
+        if self.estado == 'pendiente':
+            self.monto_pagado = 0
+            self.fecha_pago = None
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Pago"

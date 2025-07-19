@@ -3,38 +3,37 @@
 {% block title %}Detalle del Apoderado{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2 class="mb-4 text-primary">
+<div class="max-w-4xl mx-auto mt-8 px-4">
+    <h2 class="text-2xl font-semibold text-blue-700 mb-6">
         👨‍👧 Detalle del Apoderado
     </h2>
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">{{ apoderado.nombre_completo }}</h5>
+    <div class="bg-white shadow-md rounded-lg overflow-hidden mb-6">
+        <div class="bg-blue-600 px-6 py-4">
+            <h5 class="text-white text-lg font-semibold">{{ apoderado.nombre_completo }}</h5>
         </div>
-        <div class="card-body">
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <p class="mb-1"><strong>DNI:</strong> {{ apoderado.dni }}</p>
-                    <p class="mb-1"><strong>Celular:</strong> {{ apoderado.celular }}</p>
-                    <p class="mb-1"><strong>Parentesco:</strong> {{ apoderado.parentesco }}</p>
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p><span class="font-medium">DNI:</span> {{ apoderado.dni }}</p>
+                    <p><span class="font-medium">Celular:</span> {{ apoderado.celular }}</p>
+                    <p><span class="font-medium">Parentesco:</span> {{ apoderado.parentesco }}</p>
                 </div>
-                <div class="col-md-6">
-                    <p class="mb-1"><strong>Dirección:</strong></p>
-                    <p class="text-muted">{{ apoderado.direccion }}</p>
-                    <p class="mb-1"><strong>Fecha de registro:</strong> {{ apoderado.fecha_registro|date:"d/m/Y H:i" }}
-                    </p>
+                <div>
+                    <p class="font-medium">Dirección:</p>
+                    <p class="text-gray-600">{{ apoderado.direccion }}</p>
+                    <p><span class="font-medium">Fecha de registro:</span> {{ apoderado.fecha_registro|date:"d/m/Y H:i" }}</p>
                 </div>
             </div>
 
             {% if apoderado.alumnos.exists %}
-            <hr>
-            <h6 class="text-secondary">👦 Apoderado de:</h6>
-            <ul class="list-group list-group-flush">
+            <hr class="my-6">
+            <h6 class="text-gray-700 text-sm font-semibold mb-2">👦 Apoderado de:</h6>
+            <ul class="divide-y divide-gray-200">
                 {% for alumno in apoderado.alumnos.all %}
-                <li class="list-group-item">
-                    <i class="bi bi-person-fill text-primary"></i>
-                    <a href="{% url 'matriculas:alumno_detail' alumno.pk %}">
+                <li class="py-2">
+                    <i class="bi bi-person-fill text-blue-600"></i>
+                    <a href="{% url 'matriculas:alumno_detail' alumno.pk %}" class="text-blue-700 hover:underline">
                         {{ alumno.nombres_completos }}
                     </a>
                 </li>
@@ -44,7 +43,7 @@
         </div>
     </div>
 
-    <a href="{% url 'matriculas:apoderado_list' %}" class="btn btn-outline-secondary">
+    <a href="{% url 'matriculas:apoderado_list' %}" class="inline-block bg-gray-200 text-gray-800 hover:bg-gray-300 px-4 py-2 rounded">
         ⬅ Volver a la lista
     </a>
 </div>

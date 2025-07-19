@@ -4,120 +4,110 @@
 {% block title %}Registrar Alumno{% endblock %}
 
 {% block content %}
-<div class="form-container">
-    <h3 class="text-center text-primary mb-4">
-        <i class="bi bi-person-plus-fill"></i> Registrar Nuevo Alumno
-    </h3>
+<div class="max-w-5xl mx-auto px-4 py-8">
+    <h2 class="text-3xl font-bold text-center text-blue-700 mb-8 flex items-center justify-center gap-2">
+        <i class="bi bi-person-plus-fill"></i>
+        Registrar Nuevo Alumno
+    </h2>
 
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
         {% csrf_token %}
 
         <!-- Datos Personales -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-primary text-white">
+        <div class="bg-white shadow-md rounded-lg p-6 border">
+            <h3 class="text-lg font-semibold text-blue-700 flex items-center gap-2 mb-4">
                 <i class="bi bi-person-vcard"></i> Datos Personales
-            </div>
-            <div class="card-body row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">{{ form.nombres_completos.label }}</label>
-                    {{ form.nombres_completos|add_class:"form-control" }}
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">{{ form.nombres_completos.label }}</label>
+                    {{ form.nombres_completos|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500" }}
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">{{ form.dni.label }}</label>
-                    {{ form.dni|add_class:"form-control" }}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">{{ form.dni.label }}</label>
+                    {{ form.dni|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm" }}
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">{{ form.fecha_nacimiento.label }}</label>
-                    {{ form.fecha_nacimiento|add_class:"form-control" }}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">{{ form.fecha_nacimiento.label }}</label>
+                    {{ form.fecha_nacimiento|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm" }}
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">{{ form.sexo.label }}</label>
-                    {{ form.sexo|add_class:"form-select" }}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">{{ form.sexo.label }}</label>
+                    {{ form.sexo|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm" }}
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">{{ form.sexo_data.label }}</label>
-                    {{ form.sexo_data|add_class:"form-select" }}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">{{ form.sexo_data.label }}</label>
+                    {{ form.sexo_data|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm" }}
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">{{ form.grado_estudios.label }}</label>
-                    {{ form.grado_estudios|add_class:"form-select" }}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">{{ form.grado_estudios.label }}</label>
+                    {{ form.grado_estudios|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm" }}
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">{{ form.colegio_de_procedencia.label }}</label>
-                    {{ form.colegio_de_procedencia|add_class:"form-control" }}
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">{{ form.colegio_de_procedencia.label }}</label>
+                    {{ form.colegio_de_procedencia|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm" }}
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">{{ form.carrera_tentativa.label }}</label>
-                    {{ form.carrera_tentativa|add_class:"form-select" }}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">{{ form.carrera_tentativa.label }}</label>
+                    {{ form.carrera_tentativa|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm" }}
                 </div>
             </div>
         </div>
 
         <!-- Información de Contacto -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-secondary text-white">
+        <div class="bg-white shadow-md rounded-lg p-6 border">
+            <h3 class="text-lg font-semibold text-gray-700 flex items-center gap-2 mb-4">
                 <i class="bi bi-telephone-fill"></i> Información de Contacto
-            </div>
-            <div class="card-body row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">{{ form.celular_llamadas.label }}</label>
-                    {{ form.celular_llamadas|add_class:"form-control" }}
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">{{ form.celular_llamadas.label }}</label>
+                    {{ form.celular_llamadas|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm" }}
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">{{ form.numero_whatsapp.label }}</label>
-                    {{ form.numero_whatsapp|add_class:"form-control" }}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">{{ form.numero_whatsapp.label }}</label>
+                    {{ form.numero_whatsapp|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm" }}
                 </div>
             </div>
         </div>
 
         <!-- Fotografías -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-info text-white">
+        <div class="bg-white shadow-md rounded-lg p-6 border">
+            <h3 class="text-lg font-semibold text-blue-500 flex items-center gap-2 mb-4">
                 <i class="bi bi-camera-fill"></i> Fotografías del Alumno
-            </div>
-            <div class="card-body row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">{{ form.foto_previa.label }}</label>
-                    {{ form.foto_previa|add_class:"form-control" }}
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">{{ form.foto_previa.label }}</label>
+                    {{ form.foto_previa|add_class:"mt-1 block w-full text-sm border rounded-md p-2" }}
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label">{{ form.foto_frente.label }}</label>
-                    {{ form.foto_frente|add_class:"form-control" }}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">{{ form.foto_frente.label }}</label>
+                    {{ form.foto_frente|add_class:"mt-1 block w-full text-sm border rounded-md p-2" }}
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label">{{ form.foto_corte.label }}</label>
-                    {{ form.foto_corte|add_class:"form-control" }}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">{{ form.foto_corte.label }}</label>
+                    {{ form.foto_corte|add_class:"mt-1 block w-full text-sm border rounded-md p-2" }}
                 </div>
             </div>
         </div>
 
         <!-- Errores globales -->
         {% if form.non_field_errors %}
-        <div class="alert alert-danger mt-3">
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
             {{ form.non_field_errors }}
         </div>
         {% endif %}
 
         <!-- Botones -->
-        <div class="text-end mt-4">
-            <a href="{% url 'matriculas:alumno_list' %}" class="btn btn-outline-secondary me-2">
+        <div class="flex justify-end space-x-3 pt-4">
+            <a href="{% url 'matriculas:alumno_list' %}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md">
                 <i class="bi bi-x-circle"></i> Cancelar
             </a>
-            <button type="submit" class="btn btn-success">
+            <button type="submit" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md shadow">
                 <i class="bi bi-check-circle"></i> Guardar Alumno
             </button>
         </div>
     </form>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    $(document).ready(function () {
-        $('select').select2({
-            width: '100%',
-            theme: 'bootstrap-5'
-        });
-    });
-</script>
 {% endblock %}

@@ -3,104 +3,374 @@
 {% block title %}Inicio | Academia Robert Hooke{% endblock %}
 
 {% block content %}
-<div class="text-center mb-4">
-  <h1 class="display-5 fw-bold text-primary">
-    <i class="bi bi-mortarboard-fill me-2"></i>Academia Robert Hooke
-  </h1>
-  <p class="lead text-secondary">Sistema de Gestión Académica</p>
-  <hr>
-</div>
-
-<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
-
-  <!-- ALUMNOS -->
-  <div class="col">
-    <div class="card h-100 shadow-sm border-0">
-      <div class="card-body">
-        <h5 class="card-title"><i class="bi bi-people-fill me-2"></i>Alumnos</h5>
-        <ul class="list-unstyled">
-          <li><a href="{% url 'matriculas:alumno_create' %}" class="text-decoration-none">➕ Registrar Alumno</a></li>
-          <li><a href="{% url 'matriculas:alumno_list' %}" class="text-decoration-none">📋 Listar Alumnos</a></li>
-        </ul>
-      </div>
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="max-w-7xl mx-auto text-center mb-12">
+        <div class="inline-flex items-center justify-center bg-primary/10 p-4 rounded-full mb-6">
+            <i class="bi bi-mortarboard-fill text-4xl text-primary"></i>
+        </div>
+        <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">
+            Academia <span class="text-primary">Robert Hooke</span>
+        </h1>
+        <p class="mt-5 max-w-xl mx-auto text-xl text-gray-500">
+            Sistema Integral de Gestión Académica
+        </p>
+        <div class="mt-6">
+            <div class="inline-flex items-center">
+                <div class="h-px w-16 bg-primary"></div>
+                <span class="mx-4 text-gray-400">✦</span>
+                <div class="h-px w-16 bg-primary"></div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- APODERADOS -->
-  <div class="col">
-    <div class="card h-100 shadow-sm border-0">
-      <div class="card-body">
-        <h5 class="card-title"><i class="bi bi-person-bounding-box me-2"></i>Apoderados</h5>
-        <ul class="list-unstyled">
-          <li><a href="{% url 'matriculas:apoderado_create' %}" class="text-decoration-none">➕ Registrar Apoderado</a></li>
-          <li><a href="{% url 'matriculas:apoderado_list' %}" class="text-decoration-none">📋 Listar Apoderados</a></li>
-        </ul>
-      </div>
-    </div>
-  </div>
+    <!-- Stats Overview -->
+    <div class="max-w-7xl mx-auto grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-12">
+        <!-- Alumnos Card -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-blue-100 p-3 rounded-full">
+                        <i class="bi bi-people-fill text-blue-600 text-xl"></i>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Total Alumnos</dt>
+                            <dd class="flex items-baseline">
+                                <div class="text-2xl font-semibold text-gray-900">{{ total_alumnos }}</div>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <a href="{% url 'matriculas:alumno_list' %}"
+                        class="text-sm font-medium text-blue-600 hover:text-blue-500">
+                        Ver todos <span aria-hidden="true">→</span>
+                    </a>
+                </div>
+            </div>
+        </div>
 
-  <!-- MATRÍCULAS -->
-  <div class="col">
-    <div class="card h-100 shadow-sm border-0">
-      <div class="card-body">
-        <h5 class="card-title"><i class="bi bi-journal-text me-2"></i>Matrículas</h5>
-        <ul class="list-unstyled">
-          <li><a href="{% url 'matriculas:matricula_create' %}" class="text-decoration-none">➕ Registrar Matrícula</a></li>
-          <li><a href="{% url 'matriculas:matricula_list' %}" class="text-decoration-none">📋 Listar Matrículas</a></li>
-        </ul>
-      </div>
-    </div>
-  </div>
+        <!-- Matrículas Card -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-green-100 p-3 rounded-full">
+                        <i class="bi bi-journal-text text-green-600 text-xl"></i>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Matrículas Activas</dt>
+                            <dd class="flex items-baseline">
+                                <div class="text-2xl font-semibold text-gray-900">{{ matriculas_activas }}</div>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <a href="{% url 'matriculas:matricula_list' %}"
+                        class="text-sm font-medium text-green-600 hover:text-green-500">
+                        Ver todas <span aria-hidden="true">→</span>
+                    </a>
+                </div>
+            </div>
+        </div>
 
-  <!-- PAGOS -->
-  <div class="col">
-    <div class="card h-100 shadow-sm border-0">
-      <div class="card-body">
-        <h5 class="card-title"><i class="bi bi-cash-coin me-2"></i>Pagos</h5>
-        <ul class="list-unstyled">
-          <li><a href="{% url 'matriculas:resumen_general_pagos' %}" class="text-decoration-none">📊 Resumen de Pagos</a></li>
-        </ul>
-      </div>
-    </div>
-  </div>
+        <!-- Pagos Card -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-yellow-100 p-3 rounded-full">
+                        <i class="bi bi-cash-coin text-yellow-600 text-xl"></i>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Pagos del Mes</dt>
+                            <dd class="flex items-baseline">
+                                <div class="text-2xl font-semibold text-gray-900">S/ {{ pagos_mes|default:"0.00" }}
+                                </div>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <a href="{% url 'matriculas:resumen_general_pagos' %}"
+                        class="text-sm font-medium text-yellow-600 hover:text-yellow-500">
+                        Ver resumen <span aria-hidden="true">→</span>
+                    </a>
+                </div>
+            </div>
+        </div>
 
-  <!-- CICLOS -->
-  <div class="col">
-    <div class="card h-100 shadow-sm border-0">
-      <div class="card-body">
-        <h5 class="card-title"><i class="bi bi-book-fill me-2"></i>Ciclos</h5>
-        <ul class="list-unstyled">
-          <li><a href="{% url 'matriculas:ciclo_create' %}" class="text-decoration-none">➕ Registrar Ciclo</a></li>
-          <li><a href="{% url 'matriculas:ciclo_list' %}" class="text-decoration-none">📋 Listar Ciclos</a></li>
-        </ul>
-      </div>
+        <!-- Ciclos Card -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-purple-100 p-3 rounded-full">
+                        <i class="bi bi-book-fill text-purple-600 text-xl"></i>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Ciclo Actual</dt>
+                            <dd class="flex items-baseline">
+                                <div class="text-2xl font-semibold text-gray-900">{{ ciclo_actual|default:"-" }}</div>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <a href="{% url 'matriculas:ciclo_list' %}"
+                        class="text-sm font-medium text-purple-600 hover:text-purple-500">
+                        Gestionar <span aria-hidden="true">→</span>
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- TURNOS -->
-  <div class="col">
-    <div class="card h-100 shadow-sm border-0">
-      <div class="card-body">
-        <h5 class="card-title"><i class="bi bi-clock-history me-2"></i>Turnos</h5>
-        <ul class="list-unstyled">
-          <li><a href="{% url 'matriculas:turno_create' %}" class="text-decoration-none">➕ Registrar Turno</a></li>
-          <li><a href="{% url 'matriculas:turno_list' %}" class="text-decoration-none">📋 Listar Turnos</a></li>
-        </ul>
-      </div>
-    </div>
-  </div>
+    <!-- Quick Actions Grid -->
+    <div class="max-w-7xl mx-auto grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <!-- Alumnos Section -->
+        <div class="bg-white overflow-hidden shadow-xl rounded-lg">
+            <div class="p-6">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-gray-900 flex items-center">
+                        <i class="bi bi-people-fill mr-2 text-blue-600"></i>Alumnos
+                    </h3>
+                    <span
+                        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        {{ total_alumnos }} registrados
+                    </span>
+                </div>
+                <div class="mt-6 space-y-4">
+                    <a href="{% url 'matriculas:alumno_create' %}"
+                        class="group flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all duration-200">
+                        <div class="flex items-center">
+                            <div class="bg-blue-100 p-2 rounded-lg mr-4 group-hover:bg-blue-200 transition-colors">
+                                <i class="bi bi-plus-lg text-blue-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Nuevo Alumno</span>
+                        </div>
+                        <i class="bi bi-chevron-right text-gray-400 group-hover:text-blue-500"></i>
+                    </a>
+                    <a href="{% url 'matriculas:alumno_list' %}"
+                        class="group flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all duration-200">
+                        <div class="flex items-center">
+                            <div class="bg-blue-100 p-2 rounded-lg mr-4 group-hover:bg-blue-200 transition-colors">
+                                <i class="bi bi-list-ul text-blue-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Lista de Alumnos</span>
+                        </div>
+                        <i class="bi bi-chevron-right text-gray-400 group-hover:text-blue-500"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
 
-  <!-- HORARIOS -->
-  <div class="col">
-    <div class="card h-100 shadow-sm border-0">
-      <div class="card-body">
-        <h5 class="card-title"><i class="bi bi-calendar-event-fill me-2"></i>Horarios</h5>
-        <ul class="list-unstyled">
-          <li><a href="{% url 'matriculas:horario_create' %}" class="text-decoration-none">➕ Registrar Horario</a></li>
-          <li><a href="{% url 'matriculas:horario_list' %}" class="text-decoration-none">📋 Listar Horarios</a></li>
-        </ul>
-      </div>
+        <!-- Matrículas Section -->
+        <div class="bg-white overflow-hidden shadow-xl rounded-lg">
+            <div class="p-6">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-gray-900 flex items-center">
+                        <i class="bi bi-journal-text mr-2 text-green-600"></i>Matrículas
+                    </h3>
+                    <span
+                        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        {{ matriculas_activas }} activas
+                    </span>
+                </div>
+                <div class="mt-6 space-y-4">
+                    <a href="{% url 'matriculas:matricula_create' %}"
+                        class="group flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all duration-200">
+                        <div class="flex items-center">
+                            <div class="bg-green-100 p-2 rounded-lg mr-4 group-hover:bg-green-200 transition-colors">
+                                <i class="bi bi-plus-lg text-green-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Nueva Matrícula</span>
+                        </div>
+                        <i class="bi bi-chevron-right text-gray-400 group-hover:text-green-500"></i>
+                    </a>
+                    <a href="{% url 'matriculas:matricula_list' %}"
+                        class="group flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all duration-200">
+                        <div class="flex items-center">
+                            <div class="bg-green-100 p-2 rounded-lg mr-4 group-hover:bg-green-200 transition-colors">
+                                <i class="bi bi-list-ul text-green-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Lista de Matrículas</span>
+                        </div>
+                        <i class="bi bi-chevron-right text-gray-400 group-hover:text-green-500"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagos Section -->
+        <div class="bg-white overflow-hidden shadow-xl rounded-lg">
+            <div class="p-6">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-gray-900 flex items-center">
+                        <i class="bi bi-cash-coin mr-2 text-yellow-600"></i>Pagos
+                    </h3>
+                    <span
+                        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                        S/ {{ pagos_mes|default:"0.00" }} este mes
+                    </span>
+                </div>
+                <div class="mt-6 space-y-4">
+                    <a href="{% url 'matriculas:resumen_general_pagos' %}"
+                        class="group flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-yellow-500 hover:bg-yellow-50 transition-all duration-200">
+                        <div class="flex items-center">
+                            <div class="bg-yellow-100 p-2 rounded-lg mr-4 group-hover:bg-yellow-200 transition-colors">
+                                <i class="bi bi-bar-chart-line text-yellow-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Resumen de Pagos</span>
+                        </div>
+                        <i class="bi bi-chevron-right text-gray-400 group-hover:text-yellow-500"></i>
+                    </a>
+                    <a href="#"
+                        class="group flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-yellow-500 hover:bg-yellow-50 transition-all duration-200">
+                        <div class="flex items-center">
+                            <div class="bg-yellow-100 p-2 rounded-lg mr-4 group-hover:bg-yellow-200 transition-colors">
+                                <i class="bi bi-calendar-week text-yellow-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Reporte Mensual</span>
+                        </div>
+                        <i class="bi bi-chevron-right text-gray-400 group-hover:text-yellow-500"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuración Section -->
+        <div class="bg-white overflow-hidden shadow-xl rounded-lg">
+            <div class="p-6">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-gray-900 flex items-center">
+                        <i class="bi bi-gear mr-2 text-purple-600"></i>Configuración
+                    </h3>
+                    <span
+                        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                        Administración
+                    </span>
+                </div>
+                <div class="mt-6 space-y-4">
+                    <a href="{% url 'matriculas:ciclo_list' %}"
+                        class="group flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all duration-200">
+                        <div class="flex items-center">
+                            <div class="bg-purple-100 p-2 rounded-lg mr-4 group-hover:bg-purple-200 transition-colors">
+                                <i class="bi bi-book text-purple-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Gestionar Ciclos</span>
+                        </div>
+                        <i class="bi bi-chevron-right text-gray-400 group-hover:text-purple-500"></i>
+                    </a>
+                    <a href="{% url 'matriculas:turno_list' %}"
+                        class="group flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all duration-200">
+                        <div class="flex items-center">
+                            <div class="bg-purple-100 p-2 rounded-lg mr-4 group-hover:bg-purple-200 transition-colors">
+                                <i class="bi bi-clock text-purple-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Gestionar Turnos</span>
+                        </div>
+                        <i class="bi bi-chevron-right text-gray-400 group-hover:text-purple-500"></i>
+                    </a>
+                    <a href="{% url 'matriculas:horario_list' %}"
+                        class="group flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all duration-200">
+                        <div class="flex items-center">
+                            <div class="bg-purple-100 p-2 rounded-lg mr-4 group-hover:bg-purple-200 transition-colors">
+                                <i class="bi bi-calendar-event text-purple-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Gestionar Horarios</span>
+                        </div>
+                        <i class="bi bi-chevron-right text-gray-400 group-hover:text-purple-500"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Apoderados Section -->
+        <div class="bg-white overflow-hidden shadow-xl rounded-lg">
+            <div class="p-6">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-gray-900 flex items-center">
+                        <i class="bi bi-person-bounding-box mr-2 text-red-600"></i>Apoderados
+                    </h3>
+                    <span
+                        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                        {{ total_apoderados }} registrados
+                    </span>
+                </div>
+                <div class="mt-6 space-y-4">
+                    <a href="{% url 'matriculas:apoderado_create' %}"
+                        class="group flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-all duration-200">
+                        <div class="flex items-center">
+                            <div class="bg-red-100 p-2 rounded-lg mr-4 group-hover:bg-red-200 transition-colors">
+                                <i class="bi bi-plus-lg text-red-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Nuevo Apoderado</span>
+                        </div>
+                        <i class="bi bi-chevron-right text-gray-400 group-hover:text-red-500"></i>
+                    </a>
+                    <a href="{% url 'matriculas:apoderado_list' %}"
+                        class="group flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-all duration-200">
+                        <div class="flex items-center">
+                            <div class="bg-red-100 p-2 rounded-lg mr-4 group-hover:bg-red-200 transition-colors">
+                                <i class="bi bi-list-ul text-red-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Lista de Apoderados</span>
+                        </div>
+                        <i class="bi bi-chevron-right text-gray-400 group-hover:text-red-500"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Reports Section -->
+        <div class="bg-white overflow-hidden shadow-xl rounded-lg">
+            <div class="p-6">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-gray-900 flex items-center">
+                        <i class="bi bi-graph-up mr-2 text-indigo-600"></i>Reportes Rápidos
+                    </h3>
+                    <span
+                        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                        Acciones
+                    </span>
+                </div>
+                <div class="mt-6 space-y-4">
+                    <a href="#"
+                        class="group flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-200">
+                        <div class="flex items-center">
+                            <div class="bg-indigo-100 p-2 rounded-lg mr-4 group-hover:bg-indigo-200 transition-colors">
+                                <i class="bi bi-file-earmark-pdf text-indigo-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Generar Reporte PDF</span>
+                        </div>
+                        <i class="bi bi-chevron-right text-gray-400 group-hover:text-indigo-500"></i>
+                    </a>
+                    <a href="#"
+                        class="group flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-200">
+                        <div class="flex items-center">
+                            <div class="bg-indigo-100 p-2 rounded-lg mr-4 group-hover:bg-indigo-200 transition-colors">
+                                <i class="bi bi-envelope text-indigo-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Enviar Resumen por Email</span>
+                        </div>
+                        <i class="bi bi-chevron-right text-gray-400 group-hover:text-indigo-500"></i>
+                    </a>
+                    <a href="{% url 'admin:index' %}" target="_blank"
+                        class="group flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-200">
+                        <div class="flex items-center">
+                            <div class="bg-indigo-100 p-2 rounded-lg mr-4 group-hover:bg-indigo-200 transition-colors">
+                                <i class="bi bi-shield-lock text-indigo-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Panel de Administración</span>
+                        </div>
+                        <i class="bi bi-chevron-right text-gray-400 group-hover:text-indigo-500"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 {% endblock %}

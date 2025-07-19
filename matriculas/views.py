@@ -15,8 +15,28 @@ from django.views import View
 from .models import *
 from .forms import *
 
-def home(request):
-    return render(request, 'home.html') 
+def dashboard_view(request):
+    hoy = timezone.now().date()
+    primer_dia_mes = hoy.replace(day=1)
+    
+    total_alumnos = Alumno.objects.filter(activo=True).count()
+    matriculas_activas = Matricula.objects.filter(estado='activa').count()
+    
+    pagos_mes = Pago.objects.filter(
+        fecha_pago__range=(primer_dia_mes, hoy),
+        estado='pagado'
+    ).aggregate(total=Sum('monto_pagado'))['total'] or 0.00
+    ciclo_actual = Ciclo.objects.filter(activo=True).order_by('-fecha_inicio').first()
+    # Agrega el total de apoderados al contexto
+    total_apoderados = Apoderado.objects.count() # Añade esta línea
+    context = {
+        'total_alumnos': total_alumnos,
+        'matriculas_activas': matriculas_activas,
+        'pagos_mes': pagos_mes,
+        'ciclo_actual': ciclo_actual.nombre if ciclo_actual else None,
+        'total_apoderados': total_apoderados, # Añade esta línea
+    }
+    return render(request, 'home.html', context)
 
 # Vistas para Configuración (Ciclos, Turnos, Horarios)
 class CicloListView(ListView):
@@ -372,7 +392,7 @@ class MatriculaCreateView(CreateView):
                 usuario_registro=self.request.user
             )
 
-        messages.success(self.request, 'Matrícula registrada exitosamente')
+        messages.success(self.request, f'Matrícula "{matricula.codigo}"registrada exitosamente.')
         return redirect('matriculas:matricula_detail', pk=matricula.pk)
 
     def get_context_data(self, **kwargs):
@@ -388,15 +408,49 @@ class MatriculaUpdateView(UpdateView):
     success_url = reverse_lazy('matriculas:matricula_list')
 
     def form_valid(self, form):
-        messages.success(self.request, 'Matrícula actualizada exitosamente')
-        return super().form_valid(form)
+        matricula = form.save(commit=False)
+        
+        original_matricula = Matricula.objects.get(pk=matricula.pk)
+
+        monto_cambiado = original_matricula.monto != matricula.monto
+        cuotas_cambiadas = original_matricula.cuotas != matricula.cuotas
+
+        with transaction.atomic():
+            matricula.save()
+
+            if monto_cambiado or cuotas_cambiadas:
+                Pago.objects.filter(matricula=matricula).delete()
+
+                monto_total = matricula.monto
+                cuotas = matricula.cuotas
+                
+                if cuotas > 0:
+                    monto_por_cuota = round(monto_total / cuotas, 2)
+                else:
+                    monto_por_cuota = monto_total
+
+                fecha_base = timezone.now().date()
+
+                for i in range(1, cuotas + 1):
+                    fecha_vencimiento = fecha_base + timezone.timedelta(days=30 * (i - 1))
+                    Pago.objects.create(
+                        matricula=matricula,
+                        numero_cuota=i,
+                        tipo_pago='cuota',
+                        monto_programado=monto_por_cuota,
+                        fecha_vencimiento=fecha_vencimiento,
+                        estado='pendiente',
+                        usuario_registro=self.request.user
+                    )
+                messages.info(self.request, 'Los pagos de la matrícula han sido recalculados y actualizados.')
+            
+            messages.success(self.request, 'Matrícula actualizada exitosamente')
+            return super().form_valid(form)
 
 class MatriculaDetailView(DetailView):
     model = Matricula
     template_name = 'matriculas/matricula_detail.html'
     context_object_name = 'matricula'
-
-from django.http import JsonResponse
 
 class MatriculaDeleteView(DeleteView):
     model = Matricula
@@ -503,12 +557,22 @@ def editar_pago(request, pago_id):
     if request.method == 'POST':
         form = PagoForm(request.POST, instance=pago)
         if form.is_valid():
-            form.save()
+            pago_editado = form.save(commit=False)
+
+            # Ajuste adicional:
+            if pago_editado.estado == 'pendiente':
+                pago_editado.monto_pagado = 0
+                pago_editado.fecha_pago = None
+
+            pago_editado.save()
             messages.success(request, 'Pago actualizado correctamente.')
             return redirect('matriculas:lista_pagos_matricula', matricula_id=pago.matricula.id)
     else:
         form = PagoForm(instance=pago)
-    return render(request, 'matriculas/formulario_pago.html', {'form': form, 'matricula': pago.matricula})
+    return render(request, 'matriculas/formulario_pago.html', {
+        'form': form,
+        'matricula': pago.matricula
+    })
 
 @login_required
 def resumen_general_pagos(request):

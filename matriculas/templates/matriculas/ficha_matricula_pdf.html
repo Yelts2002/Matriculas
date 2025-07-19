@@ -2,42 +2,44 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <style>
-        body { font-family: Arial, sans-serif; font-size: 12px; }
-        h2 { text-align: center; }
-        .section { margin-bottom: 20px; }
-        .label { font-weight: bold; }
-    </style>
+    <title>Ficha de Matrícula</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <h2>Ficha de Matrícula</h2>
-    
-    <div class="section">
-        <div class="label">Código de Matrícula:</div>
-        {{ matricula.codigo }}
-    </div>
+<body class="bg-white text-gray-800 text-sm font-sans p-8">
+    <div class="max-w-3xl mx-auto bg-white border border-gray-300 rounded shadow-sm p-6">
+        <h2 class="text-2xl font-bold text-center text-gray-700 mb-6">📄 Ficha de Matrícula</h2>
 
-    <div class="section">
-        <div class="label">Alumno:</div>
-        {{ matricula.alumno.nombres_completos }} ({{ matricula.alumno.codigo }})<br>
-        DNI: {{ matricula.alumno.dni }}<br>
-        Grado: {{ matricula.alumno.get_grado_estudios_display }}
-    </div>
+        <!-- Código de Matrícula -->
+        <div class="mb-4">
+            <div class="font-semibold text-gray-600">Código de Matrícula:</div>
+            <div>{{ matricula.codigo }}</div>
+        </div>
 
-    <div class="section">
-        <div class="label">Apoderado:</div>
-        {{ matricula.apoderado.nombre_completo }} ({{ matricula.apoderado.codigo }})<br>
-        Parentesco: {{ matricula.apoderado.parentesco }}
-    </div>
+        <!-- Datos del Alumno -->
+        <div class="mb-4">
+            <div class="font-semibold text-gray-600 mb-1">Alumno:</div>
+            <div>{{ matricula.alumno.nombres_completos }} <span class="text-gray-500">({{ matricula.alumno.codigo }})</span></div>
+            <div>DNI: {{ matricula.alumno.dni }}</div>
+            <div>Grado: {{ matricula.alumno.get_grado_estudios_display }}</div>
+        </div>
 
-    <div class="section">
-        <div class="label">Datos de Matrícula:</div>
-        Ciclo: {{ matricula.ciclo.nombre }}<br>
-        Turno: {{ matricula.turno.nombre }}<br>
-        Horario: {{ matricula.horario }}<br>
-        Modalidad: {{ matricula.get_modalidad_display }}<br>
-        Tipo de Alumno: {{ matricula.get_estado_display }}<br>
-        Fecha: {{ matricula.fecha_matricula }}
+        <!-- Datos del Apoderado -->
+        <div class="mb-4">
+            <div class="font-semibold text-gray-600 mb-1">Apoderado:</div>
+            <div>{{ matricula.apoderado.nombre_completo }} <span class="text-gray-500">({{ matricula.apoderado.codigo }})</span></div>
+            <div>Parentesco: {{ matricula.apoderado.parentesco }}</div>
+        </div>
+
+        <!-- Datos de Matrícula -->
+        <div class="mb-4">
+            <div class="font-semibold text-gray-600 mb-1">Datos de Matrícula:</div>
+            <div>Ciclo: {{ matricula.ciclo.nombre }}</div>
+            <div>Turno: {{ matricula.turno.nombre }}</div>
+            <div>Horario: {{ matricula.horario }}</div>
+            <div>Modalidad: {{ matricula.get_modalidad_display }}</div>
+            <div>Tipo de Alumno: {{ matricula.get_estado_display }}</div>
+            <div>Fecha: {{ matricula.fecha_matricula }}</div>
+        </div>
     </div>
 </body>
 </html>
