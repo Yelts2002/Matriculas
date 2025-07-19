@@ -37,6 +37,7 @@ urlpatterns = [
     path('pagos/matricula/<int:matricula_id>/registrar/', views.registrar_pago, name='registrar_pago'),
     path('pagos/editar/<int:pago_id>/', views.editar_pago, name='editar_pago'),
     path('pagos/resumen/', views.resumen_general_pagos, name='resumen_general_pagos'),
+    path('ajax/confirmar-pago/<int:pago_id>/', views.confirmar_pago_ajax, name='ajax_confirmar_pago'),
 
     # AJAX
     path('ajax/apoderado-por-alumno/', views.obtener_apoderado_por_alumno, name='ajax_apoderado_por_alumno'),

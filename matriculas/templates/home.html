@@ -3,75 +3,104 @@
 {% block title %}Inicio | Academia Robert Hooke{% endblock %}
 
 {% block content %}
-<div style="text-align: center; margin-bottom: 30px;">
-    <h1 style="font-size: 2.5em; color: #2c3e50;">🎓 Academia Robert Hooke</h1>
-    <p style="font-size: 1.2em; color: #555;">Sistema de Gestión Académica</p>
-    <hr style="margin-top: 20px;">
+<div class="text-center mb-4">
+  <h1 class="display-5 fw-bold text-primary">
+    <i class="bi bi-mortarboard-fill me-2"></i>Academia Robert Hooke
+  </h1>
+  <p class="lead text-secondary">Sistema de Gestión Académica</p>
+  <hr>
 </div>
 
-<div style="display: flex; flex-wrap: wrap; gap: 30px; justify-content: center;">
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
 
-    <!-- ALUMNOS -->
-    <div style="flex: 1 1 280px; border: 1px solid #ccc; border-radius: 10px; padding: 20px;">
-        <h3>👨‍🎓 Alumnos</h3>
-        <ul style="list-style: none; padding: 0;">
-            <li><a href="{% url 'matriculas:alumno_create' %}">➕ Registrar Alumno</a></li>
-            <li><a href="{% url 'matriculas:alumno_list' %}">📋 Listar Alumnos</a></li>
+  <!-- ALUMNOS -->
+  <div class="col">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-people-fill me-2"></i>Alumnos</h5>
+        <ul class="list-unstyled">
+          <li><a href="{% url 'matriculas:alumno_create' %}" class="text-decoration-none">➕ Registrar Alumno</a></li>
+          <li><a href="{% url 'matriculas:alumno_list' %}" class="text-decoration-none">📋 Listar Alumnos</a></li>
         </ul>
+      </div>
     </div>
+  </div>
 
-    <!-- APODERADOS -->
-    <div style="flex: 1 1 280px; border: 1px solid #ccc; border-radius: 10px; padding: 20px;">
-        <h3>👨‍👩‍👧‍👦 Apoderados</h3>
-        <ul style="list-style: none; padding: 0;">
-            <li><a href="{% url 'matriculas:apoderado_create' %}">➕ Registrar Apoderado</a></li>
-            <li><a href="{% url 'matriculas:apoderado_list' %}">📋 Listar Apoderados</a></li>
+  <!-- APODERADOS -->
+  <div class="col">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-person-bounding-box me-2"></i>Apoderados</h5>
+        <ul class="list-unstyled">
+          <li><a href="{% url 'matriculas:apoderado_create' %}" class="text-decoration-none">➕ Registrar Apoderado</a></li>
+          <li><a href="{% url 'matriculas:apoderado_list' %}" class="text-decoration-none">📋 Listar Apoderados</a></li>
         </ul>
+      </div>
     </div>
+  </div>
 
-    <!-- MATRÍCULAS -->
-    <div style="flex: 1 1 280px; border: 1px solid #ccc; border-radius: 10px; padding: 20px;">
-        <h3>📝 Matrículas</h3>
-        <ul style="list-style: none; padding: 0;">
-            <li><a href="{% url 'matriculas:matricula_create' %}">➕ Registrar Matrícula</a></li>
-            <li><a href="{% url 'matriculas:matricula_list' %}">📋 Listar Matrículas</a></li>
+  <!-- MATRÍCULAS -->
+  <div class="col">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-journal-text me-2"></i>Matrículas</h5>
+        <ul class="list-unstyled">
+          <li><a href="{% url 'matriculas:matricula_create' %}" class="text-decoration-none">➕ Registrar Matrícula</a></li>
+          <li><a href="{% url 'matriculas:matricula_list' %}" class="text-decoration-none">📋 Listar Matrículas</a></li>
         </ul>
+      </div>
     </div>
+  </div>
 
-    <!-- PAGOS -->
-    <div style="flex: 1 1 280px; border: 1px solid #ccc; border-radius: 10px; padding: 20px;">
-        <h3>💵 Pagos</h3>
-        <ul style="list-style: none; padding: 0;">
-            <li><a href="{% url 'matriculas:resumen_general_pagos' %}">📊 Resumen de Pagos</a></li>
+  <!-- PAGOS -->
+  <div class="col">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-cash-coin me-2"></i>Pagos</h5>
+        <ul class="list-unstyled">
+          <li><a href="{% url 'matriculas:resumen_general_pagos' %}" class="text-decoration-none">📊 Resumen de Pagos</a></li>
         </ul>
+      </div>
     </div>
+  </div>
 
-    <!-- CICLOS -->
-    <div style="flex: 1 1 280px; border: 1px solid #ccc; border-radius: 10px; padding: 20px;">
-        <h3>📚 Ciclos</h3>
-        <ul style="list-style: none; padding: 0;">
-            <li><a href="{% url 'matriculas:ciclo_create' %}">➕ Registrar Ciclo</a></li>
-            <li><a href="{% url 'matriculas:ciclo_list' %}">📋 Listar Ciclos</a></li>
+  <!-- CICLOS -->
+  <div class="col">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-book-fill me-2"></i>Ciclos</h5>
+        <ul class="list-unstyled">
+          <li><a href="{% url 'matriculas:ciclo_create' %}" class="text-decoration-none">➕ Registrar Ciclo</a></li>
+          <li><a href="{% url 'matriculas:ciclo_list' %}" class="text-decoration-none">📋 Listar Ciclos</a></li>
         </ul>
+      </div>
     </div>
+  </div>
 
-    <!-- TURNOS -->
-    <div style="flex: 1 1 280px; border: 1px solid #ccc; border-radius: 10px; padding: 20px;">
-        <h3>🕒 Turnos</h3>
-        <ul style="list-style: none; padding: 0;">
-            <li><a href="{% url 'matriculas:turno_create' %}">➕ Registrar Turno</a></li>
-            <li><a href="{% url 'matriculas:turno_list' %}">📋 Listar Turnos</a></li>
+  <!-- TURNOS -->
+  <div class="col">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-clock-history me-2"></i>Turnos</h5>
+        <ul class="list-unstyled">
+          <li><a href="{% url 'matriculas:turno_create' %}" class="text-decoration-none">➕ Registrar Turno</a></li>
+          <li><a href="{% url 'matriculas:turno_list' %}" class="text-decoration-none">📋 Listar Turnos</a></li>
         </ul>
+      </div>
     </div>
+  </div>
 
-    <!-- HORARIOS -->
-    <div style="flex: 1 1 280px; border: 1px solid #ccc; border-radius: 10px; padding: 20px;">
-        <h3>📆 Horarios</h3>
-        <ul style="list-style: none; padding: 0;">
-            <li><a href="{% url 'matriculas:horario_create' %}">➕ Registrar Horario</a></li>
-            <li><a href="{% url 'matriculas:horario_list' %}">📋 Listar Horarios</a></li>
+  <!-- HORARIOS -->
+  <div class="col">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-calendar-event-fill me-2"></i>Horarios</h5>
+        <ul class="list-unstyled">
+          <li><a href="{% url 'matriculas:horario_create' %}" class="text-decoration-none">➕ Registrar Horario</a></li>
+          <li><a href="{% url 'matriculas:horario_list' %}" class="text-decoration-none">📋 Listar Horarios</a></li>
         </ul>
+      </div>
     </div>
-
+  </div>
 </div>
 {% endblock %}

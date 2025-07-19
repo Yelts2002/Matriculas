@@ -520,3 +520,19 @@ def resumen_general_pagos(request):
         monto_pagado=Sum('pagos__monto_pagado'),
     )
     return render(request, 'matriculas/lista_general_pagos.html', {'matriculas': matriculas})
+
+@require_POST
+@login_required
+def confirmar_pago_ajax(request, pago_id):
+    pago = get_object_or_404(Pago, id=pago_id, estado='pendiente')
+    monto = pago.monto_programado
+    fecha_actual = timezone.now().date()
+
+    pago.confirmar_pago(monto_pagado=monto, usuario=request.user, fecha_pago=fecha_actual)
+
+    return JsonResponse({
+        'success': True,
+        'fecha_pago': fecha_actual.strftime('%Y-%m-%d'),
+        'monto_pagado': str(monto),
+        'estado': pago.get_estado_display()
+    })

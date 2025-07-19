@@ -1,38 +1,109 @@
 {% extends "base.html" %}
+{% block title %}Pagos de Matrícula{% endblock %}
 {% block content %}
-<h2>Pagos de la matrícula: {{ matricula.codigo }} - {{ matricula.alumno.nombres_completos }}</h2>
-<a href="{% url 'matriculas:registrar_pago' matricula.id %}" class="btn btn-primary mb-3">Registrar nuevo pago</a>
-<table class="table table-striped">
-  <thead>
-    <tr>
-      <th># Cuota</th>
-      <th>Tipo</th>
-      <th>Monto</th>
-      <th>Pagado</th>
-      <th>Vencimiento</th>
-      <th>Fecha Pago</th>
-      <th>Estado</th>
-      <th>Observación</th>
-      <th>Acciones</th>
-    </tr>
-  </thead>
-  <tbody>   
-    {% for pago in pagos %}
-    <tr>
-      <td>{{ pago.numero_cuota|default:"-" }}</td>
-      <td>{{ pago.get_tipo_pago_display }}</td>
-      <td>S/ {{ pago.monto_programado }}</td>
-      <td>S/ {{ pago.monto_pagado }}</td>
-      <td>{{ pago.fecha_vencimiento }}</td>
-      <td>{{ pago.fecha_pago|default:"-" }}</td>
-      <td>{{ pago.get_estado_display }}</td>
-      <td>{{ pago.observacion|truncatewords:5 }}</td>
-      <td><a href="{% url 'matriculas:editar_pago' pago.id %}">Editar</a></td>
-    </tr>
-    {% empty %}
-    <tr><td colspan="9">No hay pagos registrados.</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
-<a href="{% url 'matriculas:matricula_detail' matricula.id %}" class="btn btn-secondary">Volver a matrícula</a>
+
+<h2 class="mb-4">
+  <i class="bi bi-cash-stack me-2"></i> Pagos de la Matrícula
+  <small class="text-muted d-block fs-6">{{ matricula.codigo }} - {{ matricula.alumno.nombres_completos }}</small>
+</h2>
+
+<!-- Tabla de Pagos Detallados -->
+<div class="table-responsive">
+  <table class="table table-bordered table-hover table-sm align-middle text-center">
+    <thead class="table-primary">
+      <tr>
+        <th># Cuota</th>
+        <th>Tipo</th>
+        <th>Monto</th>
+        <th>Pagado</th>
+        <th>Vencimiento</th>
+        <th>Fecha Pago</th>
+        <th>Estado</th>
+        <th>Observación</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for pago in pagos %}
+      <tr id="pago-row-{{ pago.id }}">
+        <td>{{ pago.numero_cuota|default:"-" }}</td>
+        <td>{{ pago.get_tipo_pago_display }}</td>
+        <td>S/ {{ pago.monto_programado }}</td>
+        <td id="monto-pagado-{{ pago.id }}">S/ {{ pago.monto_pagado }}</td>
+        <td>{{ pago.fecha_vencimiento }}</td>
+        <td id="fecha-pago-{{ pago.id }}">{{ pago.fecha_pago|default:"-" }}</td>
+        <td id="estado-pago-{{ pago.id }}">
+          {% if pago.estado == 'pagado' %}
+            <span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i>Pagado</span>
+          {% elif pago.estado == 'pendiente' %}
+            <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>Pendiente</span>
+          {% elif pago.estado == 'observado' %}
+            <span class="badge bg-danger"><i class="bi bi-exclamation-triangle me-1"></i>Observado</span>
+          {% endif %}
+        </td>
+        <td>{{ pago.observacion|truncatewords:5 }}</td>
+        <td>
+          {% if pago.estado == 'pendiente' %}
+            <button class="btn btn-sm btn-outline-success btn-confirmar-pago mb-1" data-id="{{ pago.id }}">
+              <i class="bi bi-cash"></i> Pagar
+            </button>
+          {% else %}
+            <span class="text-muted d-block mb-1">✔ Ya pagado</span>
+          {% endif %}
+          <a href="{% url 'matriculas:editar_pago' pago.id %}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-pencil"></i> Editar
+          </a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="9" class="text-center">No hay pagos registrados.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<a href="{% url 'matriculas:matricula_detail' matricula.id %}" class="btn btn-secondary mt-3">
+  <i class="bi bi-arrow-left-circle"></i> Volver a matrícula
+</a>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const csrftoken = '{{ csrf_token }}';
+
+    document.querySelectorAll('.btn-confirmar-pago').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const pagoId = this.dataset.id;
+        if (!confirm('¿Deseas confirmar el pago de esta cuota?')) return;
+
+        fetch(`/ajax/confirmar-pago/${pagoId}/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken,
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            document.getElementById(`estado-pago-${pagoId}`).innerHTML =
+              `<span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i>Pagado</span>`;
+            document.getElementById(`fecha-pago-${pagoId}`).textContent = data.fecha_pago;
+            document.getElementById(`monto-pagado-${pagoId}`).textContent = `S/ ${data.monto_pagado}`;
+            const btn = document.querySelector(`.btn-confirmar-pago[data-id='${pagoId}']`);
+            if (btn) btn.parentElement.querySelector('.btn-confirmar-pago').remove();
+
+            // Opcional: actualizar resumen sin recargar
+            location.reload(); // simple y efectivo
+          }
+        })
+        .catch(error => {
+          alert('❌ Error al confirmar el pago.');
+          console.error(error);
+        });
+      });
+    });
+  });
+</script>
 {% endblock %}
