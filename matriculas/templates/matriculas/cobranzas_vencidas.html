@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Cobranza de Cuotas Vencidas{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto mt-10 px-4">
+    <h2 class="text-2xl font-bold text-gray-700 mb-6">💸 Cuotas Vencidas y Pendientes</h2>
+    <div class="mb-8">
+        <p class="text-gray-600">Aquí puedes ver todas las cuotas vencidas y no pagadas. Puedes enviar recordatorios a los apoderados.</p>
+    </div>
+    {% if apoderados %}
+    <div class="space-y-8">
+        {% for grupo in apoderados %}
+        <div class="bg-white shadow rounded-lg p-6">
+            <div class="flex items-center justify-between mb-2">
+                <div>
+                    <span class="font-bold text-lg text-primary">{{ grupo.apoderado.nombre_completo }}</span>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm text-left border border-gray-200 divide-y divide-gray-200">
+                    <thead class="bg-yellow-100 text-yellow-800">
+                        <tr>
+                            <th class="px-4 py-2">Matrícula</th>
+                            <th class="px-4 py-2">Alumno</th>
+                            <th class="px-4 py-2">Cuota</th>
+                            <th class="px-4 py-2">Monto</th>
+                            <th class="px-4 py-2">Vencimiento</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cuota in grupo.cuotas %}
+                        <tr class="hover:bg-yellow-50">
+                            <td class="px-4 py-2">{{ cuota.matricula.codigo }}</td>
+                            <td class="px-4 py-2">{{ cuota.matricula.alumno.nombres_completos }}</td>
+                            <td class="px-4 py-2">{{ cuota.numero_cuota }}</td>
+                            <td class="px-4 py-2">S/ {{ cuota.monto_programado }}</td>
+                            <td class="px-4 py-2 text-red-600 font-semibold">{{ cuota.fecha_vencimiento }}</td>
+                            <td class="px-4 py-2">
+                                <a href="{% url 'matriculas:enviar_recordatorio_cobranza' grupo.apoderado.id %}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded text-xs font-semibold" title="Enviar WhatsApp">
+                                    <i class="bi bi-whatsapp mr-1"></i> WhatsApp
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white shadow rounded-lg p-6 text-center text-gray-500">
+        No hay cuotas vencidas pendientes de cobro.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

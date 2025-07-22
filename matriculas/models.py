@@ -328,3 +328,107 @@ class Pago(models.Model):
         self.estado = 'pagado'
         self.usuario_registro = usuario
         self.save()
+
+
+# Modelo para guardar el template editable del mensaje de WhatsApp
+
+class MensajeWhatsAppConfig(models.Model):
+    nombre = models.CharField(max_length=50, default="Recordatorio de pago")
+    template = models.TextField(
+        default="Estimado/a {apoderado}, le recordamos que tiene una cuota pendiente para la matrícula de {alumno} (cuota {numero_cuota}) por S/ {monto} con vencimiento el {fecha_vencimiento}. Por favor, regularice su pago para evitar inconvenientes."
+    )
+    activo = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.nombre
+
+
+
+# Método directo en el modelo Pago
+class Pago(models.Model):
+    ESTADO_PAGO = [
+        ('pendiente', 'Pendiente'),
+        ('pagado', 'Pagado'),
+        ('observado', 'Observado'),
+    ]
+
+    TIPO_PAGO = [
+        ('cuota', 'Cuota mensual'),
+        ('matricula', 'Matrícula'),
+        ('otros', 'Otros'),
+    ]
+
+    matricula = models.ForeignKey('Matricula', on_delete=models.CASCADE, related_name='pagos')
+    numero_cuota = models.IntegerField(null=True, blank=True)
+    tipo_pago = models.CharField(max_length=20, choices=TIPO_PAGO)
+    monto_programado = models.DecimalField(max_digits=10, decimal_places=2)
+    monto_pagado = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    fecha_vencimiento = models.DateField()
+    fecha_pago = models.DateField(null=True, blank=True)
+    estado = models.CharField(max_length=20, choices=ESTADO_PAGO, default='pendiente')
+    observacion = models.TextField(blank=True)
+    usuario_registro = models.ForeignKey(User, on_delete=models.PROTECT, related_name='pagos_registrados')
+    fecha_registro = models.DateTimeField(auto_now_add=True)
+    
+    def save(self, *args, **kwargs):
+        if self.estado == 'pendiente':
+            self.monto_pagado = 0
+            self.fecha_pago = None
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Pago"
+        verbose_name_plural = "Pagos"
+        ordering = ['fecha_vencimiento']
+        unique_together = ('matricula', 'numero_cuota', 'tipo_pago')
+
+    def __str__(self):
+        cuota_info = f" - Cuota {self.numero_cuota}" if self.numero_cuota else ""
+        return f"{self.matricula.codigo}{cuota_info} - {self.get_estado_display()}"
+
+    def confirmar_pago(self, monto_pagado, usuario, fecha_pago=None):
+        self.monto_pagado = monto_pagado
+        self.fecha_pago = fecha_pago or timezone.now().date()
+        self.estado = 'pagado'
+        self.usuario_registro = usuario
+        self.save()
+
+    def get_whatsapp_url(self):
+        """
+        Genera el enlace de WhatsApp para el apoderado con el mensaje personalizado según el template activo.
+        """
+        from urllib.parse import quote
+        config = MensajeWhatsAppConfig.objects.filter(activo=True).first()
+        if not config:
+            template = "Estimado/a {apoderado}, le recordamos que tiene una cuota pendiente para la matrícula de {alumno} (cuota {numero_cuota}) por S/ {monto} con vencimiento el {fecha_vencimiento}. Por favor, regularice su pago para evitar inconvenientes."
+        else:
+            template = config.template
+        apoderado = self.matricula.apoderado.nombre_completo
+        alumno = self.matricula.alumno.nombres_completos
+        numero_cuota = self.numero_cuota or "-"
+        monto = self.monto_programado
+        fecha_vencimiento = self.fecha_vencimiento.strftime("%d/%m/%Y")
+        mensaje = template.format(
+            apoderado=apoderado,
+            alumno=alumno,
+            numero_cuota=numero_cuota,
+            monto=monto,
+            fecha_vencimiento=fecha_vencimiento
+        )
+        telefono = self.matricula.apoderado.celular
+        mensaje_encoded = quote(mensaje)
+        url = f"https://wa.me/51{telefono}?text={mensaje_encoded}"
+        return url
+
+
+class Perfil(models.Model):
+    TIPO_USUARIO_CHOICES = [
+        ('admin', 'Administrador'),
+        ('usuario', 'Usuario'),
+    ]
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    tipo = models.CharField(max_length=10, choices=TIPO_USUARIO_CHOICES, default='usuario')
+
+    def __str__(self):
+        return f'{self.user.username} ({self.get_tipo_display()})'

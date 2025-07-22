@@ -2,49 +2,91 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView, FormView
 from django.urls import reverse_lazy
 from django.contrib import messages
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from django.template.loader import get_template
 from xhtml2pdf import pisa
-from io import BytesIO
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Sum, Q
 from django.views import View
+from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
+from django.utils.decorators import method_decorator
+from django.core.mail import send_mail
 
 from .models import *
 from .forms import *
+from django.contrib.admin.views.decorators import staff_member_required
+# Vista para editar el template de WhatsApp
+@staff_member_required
+def editar_mensaje_whatsapp(request):
+    config = MensajeWhatsAppConfig.objects.first()
+    if not config:
+        config = MensajeWhatsAppConfig.objects.create()
+    if request.method == 'POST':
+        form = MensajeWhatsAppConfigForm(request.POST, instance=config)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Mensaje de WhatsApp actualizado correctamente.')
+            return redirect('matriculas:editar_mensaje_whatsapp')
+    else:
+        form = MensajeWhatsAppConfigForm(instance=config)
+    return render(request, 'matriculas/editar_mensaje_whatsapp.html', {'form': form})
 
+@login_required
 def dashboard_view(request):
     hoy = timezone.now().date()
     primer_dia_mes = hoy.replace(day=1)
-    
+    # Último día del mes actual
+    if hoy.month == 12:
+        ultimo_dia_mes = hoy.replace(month=12, day=31)
+    else:
+        import calendar
+        last_day = calendar.monthrange(hoy.year, hoy.month)[1]
+        ultimo_dia_mes = hoy.replace(day=last_day)
+
     total_alumnos = Alumno.objects.filter(activo=True).count()
     matriculas_activas = Matricula.objects.filter(estado='activa').count()
-    
+
     pagos_mes = Pago.objects.filter(
         fecha_pago__range=(primer_dia_mes, hoy),
         estado='pagado'
     ).aggregate(total=Sum('monto_pagado'))['total'] or 0.00
+
+    # Cuotas del mes (todas las cuotas con vencimiento este mes)
+    cuotas_mes = Pago.objects.filter(
+        fecha_vencimiento__range=(primer_dia_mes, ultimo_dia_mes),
+        tipo_pago='cuota'
+    )
+    total_cuotas_mes = cuotas_mes.count()
+    total_cuotas_pendientes_mes = cuotas_mes.filter(estado='pendiente').count()
+    total_monto_cuotas_mes = cuotas_mes.aggregate(total=Sum('monto_programado'))['total'] or 0.00
+    total_monto_cuotas_pendientes_mes = cuotas_mes.filter(estado='pendiente').aggregate(total=Sum('monto_programado'))['total'] or 0.00
+
     ciclo_actual = Ciclo.objects.filter(activo=True).order_by('-fecha_inicio').first()
-    # Agrega el total de apoderados al contexto
-    total_apoderados = Apoderado.objects.count() # Añade esta línea
+    total_apoderados = Apoderado.objects.count()
     context = {
         'total_alumnos': total_alumnos,
         'matriculas_activas': matriculas_activas,
         'pagos_mes': pagos_mes,
+        'total_cuotas_mes': total_cuotas_mes,
+        'total_cuotas_pendientes_mes': total_cuotas_pendientes_mes,
+        'total_monto_cuotas_mes': total_monto_cuotas_mes,
+        'total_monto_cuotas_pendientes_mes': total_monto_cuotas_pendientes_mes,
         'ciclo_actual': ciclo_actual.nombre if ciclo_actual else None,
-        'total_apoderados': total_apoderados, # Añade esta línea
+        'total_apoderados': total_apoderados,
     }
     return render(request, 'home.html', context)
 
 # Vistas para Configuración (Ciclos, Turnos, Horarios)
-class CicloListView(ListView):
+class CicloListView(LoginRequiredMixin, ListView):
     model = Ciclo
     template_name = 'matriculas/ciclo_list.html'
     context_object_name = 'ciclos'
 
-class CicloCreateView(CreateView):
+class CicloCreateView(LoginRequiredMixin, CreateView ):
     model = Ciclo
     form_class = CicloForm
     template_name = 'matriculas/ciclo_form.html'
@@ -54,7 +96,7 @@ class CicloCreateView(CreateView):
         messages.success(self.request, 'Ciclo creado exitosamente')
         return super().form_valid(form)
 
-class CicloUpdateView(UpdateView):
+class CicloUpdateView(LoginRequiredMixin, UpdateView):
     model = Ciclo
     form_class = CicloForm
     template_name = 'matriculas/ciclo_form.html'
@@ -64,12 +106,12 @@ class CicloUpdateView(UpdateView):
         messages.success(self.request, 'Ciclo actualizado exitosamente')
         return super().form_valid(form)
 
-class TurnoListView(ListView):
+class TurnoListView(LoginRequiredMixin, ListView):
     model = Turno
     template_name = 'matriculas/turno_list.html'
     context_object_name = 'turnos'
 
-class TurnoCreateView(CreateView):
+class TurnoCreateView(LoginRequiredMixin, CreateView):
     model = Turno
     form_class = TurnoForm
     template_name = 'matriculas/turno_form.html'
@@ -79,7 +121,7 @@ class TurnoCreateView(CreateView):
         messages.success(self.request, 'Turno creado exitosamente')
         return super().form_valid(form)
 
-class TurnoUpdateView(UpdateView):
+class TurnoUpdateView(LoginRequiredMixin, UpdateView):
     model = Turno
     form_class = TurnoForm
     template_name = 'matriculas/turno_form.html'
@@ -89,7 +131,7 @@ class TurnoUpdateView(UpdateView):
         messages.success(self.request, 'Turno actualizado exitosamente')
         return super().form_valid(form)
 
-class HorarioListView(ListView):
+class HorarioListView(LoginRequiredMixin, ListView):
     model = Horario
     template_name = 'matriculas/horario_list.html'
     context_object_name = 'horarios'
@@ -106,7 +148,7 @@ class HorarioListView(ListView):
         context['turnos'] = Turno.objects.all()
         return context
 
-class HorarioCreateView(CreateView):
+class HorarioCreateView(LoginRequiredMixin, CreateView):
     model = Horario
     form_class = HorarioForm
     template_name = 'matriculas/horario_form.html'
@@ -116,7 +158,7 @@ class HorarioCreateView(CreateView):
         messages.success(self.request, 'Horario creado exitosamente')
         return super().form_valid(form)
 
-class HorarioUpdateView(UpdateView):
+class HorarioUpdateView(LoginRequiredMixin, UpdateView):
     model = Horario
     form_class = HorarioForm
     template_name = 'matriculas/horario_form.html'
@@ -127,7 +169,7 @@ class HorarioUpdateView(UpdateView):
         return super().form_valid(form)
 
 # Vistas para Alumnos
-class AlumnoListView(ListView):
+class AlumnoListView(LoginRequiredMixin, ListView):
     model = Alumno
     template_name = 'matriculas/alumno_list.html'
     context_object_name = 'alumnos'
@@ -144,7 +186,7 @@ class AlumnoListView(ListView):
             )
         return queryset
 
-class AlumnoCreateView(CreateView):
+class AlumnoCreateView(LoginRequiredMixin, CreateView):
     model = Alumno
     form_class = AlumnoForm
     template_name = 'matriculas/alumno_form.html'
@@ -154,7 +196,7 @@ class AlumnoCreateView(CreateView):
         messages.success(self.request, 'Alumno registrado exitosamente')
         return super().form_valid(form)
 
-class AlumnoUpdateView(UpdateView):
+class AlumnoUpdateView(LoginRequiredMixin, UpdateView):
     model = Alumno
     form_class = AlumnoForm
     template_name = 'matriculas/alumno_form.html'
@@ -167,12 +209,12 @@ class AlumnoUpdateView(UpdateView):
         messages.success(self.request, "Datos del alumno actualizados exitosamente.")
         return super().form_valid(form)
 
-class AlumnoDetailView(DetailView):
+class AlumnoDetailView(LoginRequiredMixin, DetailView):
     model = Alumno
     template_name = 'matriculas/alumno_detail.html'
     context_object_name = 'alumno'
 
-class AlumnoDeleteView(View):
+class AlumnoDeleteView(LoginRequiredMixin, View):
     def post(self, request, pk):
         try:
             alumno = Alumno.objects.get(pk=pk)
@@ -182,7 +224,7 @@ class AlumnoDeleteView(View):
             return JsonResponse({'success': False, 'error': 'Alumno no encontrado'}, status=404)
 
 # Vistas para Apoderados
-class ApoderadoListView(ListView):
+class ApoderadoListView(LoginRequiredMixin, ListView):
     model = Apoderado
     template_name = 'matriculas/apoderado_list.html'
     context_object_name = 'apoderados'
@@ -199,7 +241,7 @@ class ApoderadoListView(ListView):
             )
         return queryset
 
-class ApoderadoCreateView(CreateView):
+class ApoderadoCreateView(LoginRequiredMixin, CreateView):
     model = Apoderado
     form_class = ApoderadoForm  # ← Usa el formulario correcto
     template_name = 'matriculas/apoderado_form.html'
@@ -238,7 +280,7 @@ class ApoderadoCreateView(CreateView):
         return redirect(self.success_url)
 
 
-class ApoderadoUpdateView(UpdateView):
+class ApoderadoUpdateView(LoginRequiredMixin, UpdateView):
     model = Apoderado
     form_class = ApoderadoForm
     template_name = 'matriculas/apoderado_form.html'
@@ -248,12 +290,12 @@ class ApoderadoUpdateView(UpdateView):
         messages.success(self.request, 'Datos del apoderado actualizados exitosamente')
         return super().form_valid(form)
 
-class ApoderadoDetailView(DetailView):
+class ApoderadoDetailView(LoginRequiredMixin, DetailView):
     model = Apoderado
     template_name = 'matriculas/apoderado_detail.html'
     context_object_name = 'apoderado'
 
-class ApoderadoDeleteView(DeleteView):
+class ApoderadoDeleteView(LoginRequiredMixin, DeleteView):
     model = Apoderado
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -261,7 +303,7 @@ class ApoderadoDeleteView(DeleteView):
         return JsonResponse({'success': True})
 
 # Vista para asignar apoderado a alumno
-class AsignarCrearApoderadoView(FormView):
+class AsignarCrearApoderadoView(LoginRequiredMixin, FormView):
     template_name = 'matriculas/asignar_apoderado.html'
     form_class = ApoderadoAlumnoForm
 
@@ -301,6 +343,7 @@ class AsignarCrearApoderadoView(FormView):
         super().save(*args, **kwargs)
 
 @require_POST
+@login_required
 def asignar_apoderado_existente(request):
     alumno_id = request.POST.get('alumno_id')
     apoderado_id = request.POST.get('apoderado_id')
@@ -311,7 +354,7 @@ def asignar_apoderado_existente(request):
     return redirect('matriculas:alumno_detail', pk=alumno.pk)
 
 # Vistas para Matrículas
-class MatriculaListView(ListView):
+class MatriculaListView(LoginRequiredMixin, ListView):
     model = Matricula
     template_name = 'matriculas/matricula_list.html'
     context_object_name = 'matriculas'
@@ -327,7 +370,7 @@ class MatriculaListView(ListView):
             )
         return queryset
 
-class MatriculaCreateView(CreateView):
+class MatriculaCreateView(LoginRequiredMixin, CreateView):
     model = Matricula
     form_class = MatriculaForm
     template_name = 'matriculas/matricula_form.html'
@@ -401,7 +444,7 @@ class MatriculaCreateView(CreateView):
             context['alumno'] = self.alumno
         return context
 
-class MatriculaUpdateView(UpdateView):
+class MatriculaUpdateView(LoginRequiredMixin, UpdateView):
     model = Matricula
     form_class = MatriculaForm
     template_name = 'matriculas/matricula_form.html'
@@ -447,12 +490,12 @@ class MatriculaUpdateView(UpdateView):
             messages.success(self.request, 'Matrícula actualizada exitosamente')
             return super().form_valid(form)
 
-class MatriculaDetailView(DetailView):
+class MatriculaDetailView(LoginRequiredMixin, DetailView):
     model = Matricula
     template_name = 'matriculas/matricula_detail.html'
     context_object_name = 'matricula'
 
-class MatriculaDeleteView(DeleteView):
+class MatriculaDeleteView(LoginRequiredMixin, DeleteView):
     model = Matricula
     success_url = reverse_lazy('matriculas:matricula_list')
 
@@ -461,6 +504,7 @@ class MatriculaDeleteView(DeleteView):
         self.object.delete()
         return JsonResponse({'success': True})
 
+@login_required
 def ficha_matricula_pdf(request, pk):
     matricula = get_object_or_404(Matricula, pk=pk)
     
@@ -480,6 +524,7 @@ def ficha_matricula_pdf(request, pk):
     return response
 
 #AJAX  
+@login_required
 def obtener_apoderado_por_alumno(request):
     alumno_id = request.GET.get('alumno_id')
     try:
@@ -494,6 +539,7 @@ def obtener_apoderado_por_alumno(request):
         pass
     return JsonResponse({}, status=404)
 
+@login_required
 def obtener_alumnos_por_apoderado(request):
     apoderado_id = request.GET.get('apoderado_id')
     try:
@@ -507,22 +553,26 @@ def obtener_alumnos_por_apoderado(request):
     except Apoderado.DoesNotExist:
         return JsonResponse({'alumnos': []})
     
+@login_required
 def todos_apoderados(request):
     apoderados = Apoderado.objects.all().values('id', 'nombre_completo')
     data = [{'id': a['id'], 'nombre': a['nombre_completo']} for a in apoderados]
     return JsonResponse({'apoderados': data})
 
+@login_required
 def todos_alumnos(request):
     alumnos = Alumno.objects.all().values('id', 'nombres_completos')
     data = [{'id': a['id'], 'nombre': a['nombres_completos']} for a in alumnos]
     return JsonResponse({'alumnos': data})
 
+@login_required
 def buscar_alumnos(request):
     q = request.GET.get('q', '')
     alumnos = Alumno.objects.filter(nombres_completos__icontains=q)[:20]
     data = [{'id': a.id, 'nombre': a.nombres_completos} for a in alumnos]
     return JsonResponse(data, safe=False)
 
+@login_required
 def buscar_apoderados(request):
     q = request.GET.get('q', '')
     apoderados = Apoderado.objects.filter(nombre_completo__icontains=q)[:20]
@@ -600,3 +650,96 @@ def confirmar_pago_ajax(request, pago_id):
         'monto_pagado': str(monto),
         'estado': pago.get_estado_display()
     })
+
+#usuarios
+class CustomLoginView(LoginView):
+    template_name = 'matriculas/login.html'
+    redirect_authenticated_user = True
+
+    def get_success_url(self):
+        perfil = getattr(self.request.user, 'perfil', None)
+        if perfil and perfil.tipo == 'admin':
+            return reverse_lazy('matriculas:dashboard')
+        return reverse_lazy('matriculas:alumno_list')  
+
+@login_required
+def vista_solo_admin(request):
+    if request.user.perfil.tipo != 'admin':
+        return HttpResponseForbidden("Acceso restringido a administradores.")
+    
+    return render(request, 'matriculas/admin_view.html')
+
+class CustomLogoutView(LogoutView):
+    next_page = reverse_lazy('matriculas:login')
+
+class CustomPasswordChangeView(PasswordChangeView):
+    template_name = 'matriculas/password_change_form.html'
+    success_url = reverse_lazy('password_change_done')
+
+class CustomPasswordChangeDoneView(PasswordChangeDoneView):
+    template_name = 'matriculas/password_change_done.html'
+
+@method_decorator(login_required, name='dispatch')
+class UsuarioCreateView(CreateView):
+    model = User
+    form_class = UsuarioCreateForm
+    template_name = 'matriculas/usuario_create.html'
+
+    def form_valid(self, form):
+        usuario = form.save(commit=False)
+        raw_password = form.cleaned_data.get("password")  # almacena antes de guardar
+        usuario.set_password(raw_password)
+        usuario.save()
+        
+        tipo = getattr(usuario.perfil, 'tipo', 'usuario')  # si usas perfil
+
+        messages.success(
+            self.request,
+            f"✅ Usuario creado con éxito.<br><strong>Usuario:</strong> {usuario.username} <br><strong>Contraseña:</strong> {raw_password} <br><strong>Tipo:</strong> {tipo}"
+        )
+
+        # Redirigir a la misma URL para limpiar el formulario (POST-Redirect-GET)
+        return redirect(reverse('matriculas:usuario_create'))
+
+@login_required
+def cobranza_vencidas_view(request):
+    hoy = timezone.now().date()
+    # Cuotas vencidas y no pagadas
+    cuotas_vencidas = Pago.objects.filter(
+        fecha_vencimiento__lt=hoy,
+        estado='pendiente',
+        tipo_pago='cuota'
+    ).select_related('matricula__alumno', 'matricula__apoderado')
+
+    # Agrupar por apoderado para reportes
+    apoderados = {}
+    for cuota in cuotas_vencidas:
+        apoderado = cuota.matricula.apoderado
+        if apoderado:
+            if apoderado.id not in apoderados:
+                apoderados[apoderado.id] = {
+                    'apoderado': apoderado,
+                    'cuotas': []
+                }
+            apoderados[apoderado.id]['cuotas'].append(cuota)
+
+    context = {
+        'cuotas_vencidas': cuotas_vencidas,
+        'apoderados': apoderados.values(),
+    }
+    return render(request, 'matriculas/cobranzas_vencidas.html', context)
+
+@login_required
+def enviar_recordatorio_cobranza(request, apoderado_id):
+    apoderado = get_object_or_404(Apoderado, id=apoderado_id)
+    cuota = Pago.objects.filter(
+        matricula__apoderado=apoderado,
+        estado='pendiente',
+        fecha_vencimiento__lt=timezone.now().date(),
+        tipo_pago='cuota'
+    ).order_by('fecha_vencimiento').first()
+    if not cuota:
+        messages.info(request, 'No hay cuotas vencidas para este apoderado.')
+        return redirect('matriculas:cobranzas_vencidas')
+    # Redirigir al enlace de WhatsApp generado
+    return redirect(cuota.get_whatsapp_url())

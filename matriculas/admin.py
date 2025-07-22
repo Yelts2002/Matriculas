@@ -109,3 +109,8 @@ class PagoAdmin(admin.ModelAdmin):
     list_display = ('matricula', 'numero_cuota', 'estado', 'monto_pagado', 'fecha_pago')
     list_filter = ('estado', 'tipo_pago')
     search_fields = ('matricula__codigo', 'matricula__alumno__nombres_completos')
+
+@admin.register(Perfil)
+class PerfilAdmin(admin.ModelAdmin):
+    list_display = ('user', 'tipo')
+    list_filter = ('tipo',)

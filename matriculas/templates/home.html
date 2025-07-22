@@ -213,7 +213,8 @@
                     </h3>
                     <span
                         class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
-                        S/ {{ pagos_mes|default:"0.00" }} este mes
+                        S/ {{ total_monto_cuotas_pendientes_mes|default:"0.00" }} a cobrar &bull; {{
+                        total_cuotas_pendientes_mes }} cuota{{ total_cuotas_pendientes_mes|pluralize }} pendientes
                     </span>
                 </div>
                 <div class="mt-6 space-y-4">
@@ -236,6 +237,16 @@
                             <span class="font-medium text-gray-700">Reporte Mensual</span>
                         </div>
                         <i class="bi bi-chevron-right text-gray-400 group-hover:text-yellow-500"></i>
+                    </a>
+                    <a href="{% url 'matriculas:cobranzas_vencidas' %}"
+                        class="group flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all duration-200">
+                        <div class="flex items-center">
+                            <div class="bg-green-100 p-2 rounded-lg mr-4 group-hover:bg-green-200 transition-colors">
+                                <i class="bi bi-whatsapp text-green-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Cobranzas</span>
+                        </div>
+                        <i class="bi bi-chevron-right text-gray-400 group-hover:text-green-500"></i>
                     </a>
                 </div>
             </div>
@@ -283,6 +294,17 @@
                             <span class="font-medium text-gray-700">Gestionar Horarios</span>
                         </div>
                         <i class="bi bi-chevron-right text-gray-400 group-hover:text-purple-500"></i>
+                    </a>
+
+                    <a href="{% url 'matriculas:editar_mensaje_whatsapp' %}"
+                        class="group flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all duration-200">
+                        <div class="flex items-center">
+                            <div class="bg-green-100 p-2 rounded-lg mr-4 group-hover:bg-green-200 transition-colors">
+                                <i class="bi bi-whatsapp text-green-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Editar Mensaje de Cobranza</span>
+                        </div>
+                        <i class="bi bi-chevron-right text-gray-400 group-hover:text-green-500"></i>
                     </a>
                 </div>
             </div>
