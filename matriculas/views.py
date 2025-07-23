@@ -15,7 +15,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.utils.decorators import method_decorator
 from django.core.mail import send_mail
-
 from .models import *
 from .forms import *
 from django.contrib.admin.views.decorators import staff_member_required
@@ -659,7 +658,7 @@ class CustomLoginView(LoginView):
     def get_success_url(self):
         perfil = getattr(self.request.user, 'perfil', None)
         if perfil and perfil.tipo == 'admin':
-            return reverse_lazy('matriculas:dashboard')
+            return reverse_lazy('matriculas:home')
         return reverse_lazy('matriculas:alumno_list')  
 
 @login_required
