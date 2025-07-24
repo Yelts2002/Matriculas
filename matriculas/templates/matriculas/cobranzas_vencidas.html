@@ -1,42 +1,44 @@
 {% extends 'base.html' %}
 {% block title %}Cobranza de Cuotas Vencidas{% endblock %}
+
 {% block content %}
-<div class="max-w-5xl mx-auto mt-10 px-4">
-    <h2 class="text-2xl font-bold text-gray-700 mb-6">💸 Cuotas Vencidas y Pendientes</h2>
-    <div class="mb-8">
-        <p class="text-gray-600">Aquí puedes ver todas las cuotas vencidas y no pagadas. Puedes enviar recordatorios a los apoderados.</p>
-    </div>
+<div class="max-w-6xl mx-auto mt-10 px-4">
+    <h2 class="text-3xl font-bold text-gray-800 mb-4">💸 Cuotas Vencidas y Pendientes</h2>
+    <p class="text-gray-600 mb-8">Visualiza las cuotas vencidas que aún no han sido pagadas y contacta a los apoderados para recordarles sus obligaciones.</p>
+
     {% if apoderados %}
-    <div class="space-y-8">
+    <div class="space-y-10">
         {% for grupo in apoderados %}
-        <div class="bg-white shadow rounded-lg p-6">
-            <div class="flex items-center justify-between mb-2">
-                <div>
-                    <span class="font-bold text-lg text-primary">{{ grupo.apoderado.nombre_completo }}</span>
-                </div>
+        <section class="bg-white shadow-md rounded-xl p-6 border border-gray-200">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-primary">{{ grupo.apoderado.nombre_completo }}</h3>
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-full text-sm text-left border border-gray-200 divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200 border border-gray-300 text-sm text-left">
                     <thead class="bg-yellow-100 text-yellow-800">
                         <tr>
-                            <th class="px-4 py-2">Matrícula</th>
-                            <th class="px-4 py-2">Alumno</th>
-                            <th class="px-4 py-2">Cuota</th>
-                            <th class="px-4 py-2">Monto</th>
-                            <th class="px-4 py-2">Vencimiento</th>
+                            <th scope="col" class="px-4 py-2">Matrícula</th>
+                            <th scope="col" class="px-4 py-2">Alumno</th>
+                            <th scope="col" class="px-4 py-2">Cuota</th>
+                            <th scope="col" class="px-4 py-2">Monto</th>
+                            <th scope="col" class="px-4 py-2">Vencimiento</th>
+                            <th scope="col" class="px-4 py-2">Acción</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-gray-100">
                         {% for cuota in grupo.cuotas %}
-                        <tr class="hover:bg-yellow-50">
+                        <tr class="hover:bg-yellow-50 transition duration-200">
                             <td class="px-4 py-2">{{ cuota.matricula.codigo }}</td>
                             <td class="px-4 py-2">{{ cuota.matricula.alumno.nombres_completos }}</td>
-                            <td class="px-4 py-2">{{ cuota.numero_cuota }}</td>
-                            <td class="px-4 py-2">S/ {{ cuota.monto_programado }}</td>
-                            <td class="px-4 py-2 text-red-600 font-semibold">{{ cuota.fecha_vencimiento }}</td>
+                            <td class="px-4 py-2">N° {{ cuota.numero_cuota }}</td>
+                            <td class="px-4 py-2 font-medium">S/ {{ cuota.monto_programado|floatformat:2 }}</td>
+                            <td class="px-4 py-2 text-red-600 font-semibold">{{ cuota.fecha_vencimiento|date:"d/m/Y" }}</td>
                             <td class="px-4 py-2">
-                                <a href="{% url 'matriculas:enviar_recordatorio_cobranza' grupo.apoderado.id %}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded text-xs font-semibold" title="Enviar WhatsApp">
-                                    <i class="bi bi-whatsapp mr-1"></i> WhatsApp
+                                <a href="{% url 'matriculas:enviar_recordatorio_cobranza' grupo.apoderado.id %}"
+                                   target="_blank" rel="noopener noreferrer"
+                                   class="inline-flex items-center gap-2 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-md text-xs font-semibold shadow-sm transition"
+                                   title="Enviar recordatorio por WhatsApp">
+                                    <i class="bi bi-whatsapp text-lg"></i> Enviar WhatsApp
                                 </a>
                             </td>
                         </tr>
@@ -44,11 +46,11 @@
                     </tbody>
                 </table>
             </div>
-        </div>
+        </section>
         {% endfor %}
     </div>
     {% else %}
-    <div class="bg-white shadow rounded-lg p-6 text-center text-gray-500">
+    <div class="bg-white shadow rounded-lg p-6 text-center text-gray-500 border border-gray-200">
         No hay cuotas vencidas pendientes de cobro.
     </div>
     {% endif %}

@@ -1,8 +1,8 @@
 # Formulario para editar el template de WhatsApp
 from django import forms
 from django.core.exceptions import ValidationError
+from .models import MensajeWhatsAppConfig, Ciclo, Turno, Horario, Alumno, Apoderado, Matricula, Pago, Perfil, User
 from django.db import models
-from .models import *
 
 class MensajeWhatsAppConfigForm(forms.ModelForm):
     class Meta:

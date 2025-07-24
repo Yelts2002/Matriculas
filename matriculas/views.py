@@ -1,23 +1,23 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView, FormView
-from django.urls import reverse_lazy
+from django.views.generic import *
+from django.urls import reverse_lazy, reverse
 from django.contrib import messages
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.template.loader import get_template
 from xhtml2pdf import pisa
-from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Sum, Q
 from django.views import View
-from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordChangeDoneView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.utils.decorators import method_decorator
-from django.core.mail import send_mail
-from .models import *
+from .models import CodigoManager
 from .forms import *
 from django.contrib.admin.views.decorators import staff_member_required
+from django.utils import timezone
+from django.db import transaction
+
 # Vista para editar el template de WhatsApp
 @staff_member_required
 def editar_mensaje_whatsapp(request):
@@ -277,7 +277,6 @@ class ApoderadoCreateView(LoginRequiredMixin, CreateView):
         form.save_m2m()  # guarda relación many-to-many
         messages.success(self.request, 'Apoderado registrado exitosamente')
         return redirect(self.success_url)
-
 
 class ApoderadoUpdateView(LoginRequiredMixin, UpdateView):
     model = Apoderado
