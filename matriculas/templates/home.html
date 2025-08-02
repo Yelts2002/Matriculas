@@ -176,6 +176,49 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Apoderados Section -->
+        <div class="bg-white overflow-hidden shadow-xl rounded-lg hover:shadow-2xl transition-shadow duration-300">
+            <div class="p-6">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-gray-900 flex items-center">
+                        <i class="bi bi-person-bounding-box mr-2 text-red-600"></i>Apoderados
+                    </h3>
+                    <span
+                        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                        {{ total_apoderados }} registrados
+                    </span>
+                </div>
+                <div class="mt-6 space-y-3">
+                    <a href="{% url 'matriculas:apoderado_create' %}"
+                        class="group flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-all duration-200">
+                        <div class="flex items-center">
+                            <div class="bg-red-100 p-3 rounded-lg mr-4 group-hover:bg-red-200 transition-colors">
+                                <i class="bi bi-plus-lg text-red-600"></i>
+                            </div>
+                            <div>
+                                <span class="block font-medium text-gray-700">Nuevo Apoderado</span>
+                                <span class="block text-xs text-gray-500 mt-1">Registrar nuevo responsable</span>
+                            </div>
+                        </div>
+                        <i class="bi bi-chevron-right text-gray-400 group-hover:text-red-500 transition-colors"></i>
+                    </a>
+                    <a href="{% url 'matriculas:apoderado_list' %}"
+                        class="group flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-all duration-200">
+                        <div class="flex items-center">
+                            <div class="bg-red-100 p-3 rounded-lg mr-4 group-hover:bg-red-200 transition-colors">
+                                <i class="bi bi-list-ul text-red-600"></i>
+                            </div>
+                            <div>
+                                <span class="block font-medium text-gray-700">Lista de Apoderados</span>
+                                <span class="block text-xs text-gray-500 mt-1">Ver todos los registros</span>
+                            </div>
+                        </div>
+                        <i class="bi bi-chevron-right text-gray-400 group-hover:text-red-500 transition-colors"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
 
         <!-- Matrículas Section -->
         <div class="bg-white overflow-hidden shadow-xl rounded-lg hover:shadow-2xl transition-shadow duration-300">
@@ -220,7 +263,7 @@
             </div>
         </div>
 
-        <!-- Pagos Section - Versión Mejorada -->
+        <!-- Pagos Section -->
         <div
             class="bg-white overflow-hidden shadow-xl rounded-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-yellow-100/50">
             <div class="p-6">
@@ -354,49 +397,6 @@
                             </div>
                         </div>
                         <i class="bi bi-chevron-right text-gray-400 group-hover:text-purple-500 transition-colors"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Apoderados Section -->
-        <div class="bg-white overflow-hidden shadow-xl rounded-lg hover:shadow-2xl transition-shadow duration-300">
-            <div class="p-6">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-bold text-gray-900 flex items-center">
-                        <i class="bi bi-person-bounding-box mr-2 text-red-600"></i>Apoderados
-                    </h3>
-                    <span
-                        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                        {{ total_apoderados }} registrados
-                    </span>
-                </div>
-                <div class="mt-6 space-y-3">
-                    <a href="{% url 'matriculas:apoderado_create' %}"
-                        class="group flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-all duration-200">
-                        <div class="flex items-center">
-                            <div class="bg-red-100 p-3 rounded-lg mr-4 group-hover:bg-red-200 transition-colors">
-                                <i class="bi bi-plus-lg text-red-600"></i>
-                            </div>
-                            <div>
-                                <span class="block font-medium text-gray-700">Nuevo Apoderado</span>
-                                <span class="block text-xs text-gray-500 mt-1">Registrar nuevo responsable</span>
-                            </div>
-                        </div>
-                        <i class="bi bi-chevron-right text-gray-400 group-hover:text-red-500 transition-colors"></i>
-                    </a>
-                    <a href="{% url 'matriculas:apoderado_list' %}"
-                        class="group flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-all duration-200">
-                        <div class="flex items-center">
-                            <div class="bg-red-100 p-3 rounded-lg mr-4 group-hover:bg-red-200 transition-colors">
-                                <i class="bi bi-list-ul text-red-600"></i>
-                            </div>
-                            <div>
-                                <span class="block font-medium text-gray-700">Lista de Apoderados</span>
-                                <span class="block text-xs text-gray-500 mt-1">Ver todos los registros</span>
-                            </div>
-                        </div>
-                        <i class="bi bi-chevron-right text-gray-400 group-hover:text-red-500 transition-colors"></i>
                     </a>
                 </div>
             </div>

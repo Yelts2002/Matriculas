@@ -1,45 +1,236 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Ficha de Matrícula</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            margin: 40px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .contenedor {
+            width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .titulo h2 {
+            font-size: 24px;
+            margin: 0;
+            color: #333;
+        }
+
+        .titulo {
+            flex: 1;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            color: #a71e52;
+        }
+
+        .tabla-general {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .tabla-general td {
+            vertical-align: top;
+            width: 50%;
+            padding: 8px;
+        }
+
+        .subtabla {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 18px;
+            background-color: #fff;
+        }
+
+        .subtabla th {
+            background-color: #a71e52;
+            color: #fff;
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #bbb;
+        }
+
+        .subtabla td {
+            border: 1px solid #bbb;
+            padding: 6px 8px;
+            word-wrap: break-word;
+        }
+
+        @media print {
+            body {
+                margin: 0;
+                background: #fff;
+            }
+
+            .contenedor {
+                box-shadow: none;
+                border: none;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            .encabezado {
+                margin-bottom: 15px;
+            }
+        }
+    </style>
 </head>
-<body class="bg-white text-gray-800 text-sm font-sans p-8">
-    <div class="max-w-3xl mx-auto bg-white border border-gray-300 rounded shadow-sm p-6">
-        <h2 class="text-2xl font-bold text-center text-gray-700 mb-6">📄 Ficha de Matrícula</h2>
 
-        <!-- Código de Matrícula -->
-        <div class="mb-4">
-            <div class="font-semibold text-gray-600">Código de Matrícula:</div>
-            <div>{{ matricula.codigo }}</div>
-        </div>
+<body>
+    <style>
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
 
-        <!-- Datos del Alumno -->
-        <div class="mb-4">
-            <div class="font-semibold text-gray-600 mb-1">Alumno:</div>
-            <div>{{ matricula.alumno.nombres_completos }} <span class="text-gray-500">({{ matricula.alumno.codigo }})</span></div>
-            <div>DNI: {{ matricula.alumno.dni }}</div>
-            <div>Grado: {{ matricula.alumno.get_grado_estudios_display }}</div>
-        </div>
+        .row-superior {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 20px;
+        }
 
-        <!-- Datos del Apoderado -->
-        <div class="mb-4">
-            <div class="font-semibold text-gray-600 mb-1">Apoderado:</div>
-            <div>{{ matricula.apoderado.nombre_completo }} <span class="text-gray-500">({{ matricula.apoderado.codigo }})</span></div>
-            <div>Parentesco: {{ matricula.apoderado.parentesco }}</div>
-        </div>
+        .div1,
+        .div2 {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+        }
 
-        <!-- Datos de Matrícula -->
-        <div class="mb-4">
-            <div class="font-semibold text-gray-600 mb-1">Datos de Matrícula:</div>
-            <div>Ciclo: {{ matricula.ciclo.nombre }}</div>
-            <div>Turno: {{ matricula.turno.nombre }}</div>
-            <div>Horario: {{ matricula.horario }}</div>
-            <div>Modalidad: {{ matricula.get_modalidad_display }}</div>
-            <div>Tipo de Alumno: {{ matricula.get_estado_display }}</div>
-            <div>Fecha: {{ matricula.fecha_matricula }}</div>
+        .div1 img {
+            width: 200px;
+            height: auto;
+        }
+
+        .div2 img {
+            width: 177px;
+            height: 236px;
+        }
+    </style>
+
+    <div class="container">
+        <div class="row-superior">
+            <div class="div1">
+                <img src="{% static 'images/Logo01.png' %}" alt="Logo">
+            </div>
+            <div class="div2">
+                {% if matricula.alumno.foto_previa %}
+                <img src="{{ matricula.alumno.foto_previa.url }}" alt="Foto del alumno">
+                {% else %}
+                <span>Sin foto</span>
+                {% endif %}
+            </div>
         </div>
     </div>
+
+    <div class="contenedor">
+        <div class="titulo">
+            <h2>Ficha de Matrícula</h2>
+        </div>
+        <!-- Contenido de Tablas -->
+        <table class="tabla-general">
+            <tr>
+                <!-- Datos de Matrícula -->
+                <td>
+                    <table class="subtabla">
+                        <tr>
+                            <th colspan="2">Datos de Matrícula</th>
+                        </tr>
+                        <tr>
+                            <td><strong>Código</strong></td>
+                            <td>{{ matricula.codigo }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Fecha</strong></td>
+                            <td>{{ matricula.fecha_matricula }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Ciclo</strong></td>
+                            <td>{{ matricula.ciclo.nombre }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Turno</strong></td>
+                            <td>{{ matricula.turno.nombre }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Horario</strong></td>
+                            <td>{{ matricula.horario }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Monto</strong></td>
+                            <td>S/. {{ matricula.monto }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Modalidad</strong></td>
+                            <td>{{ matricula.get_modalidad_display }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Estado</strong></td>
+                            <td>{{ matricula.get_estado_display }}</td>
+                        </tr>
+                    </table>
+                </td>
+
+                <!-- Datos del Apoderado y Alumno -->
+                <td>
+                    <table class="subtabla">
+                        <tr>
+                            <th colspan="2">Datos del Apoderado</th>
+                        </tr>
+                        <tr>
+                            <td><strong>Código</strong></td>
+                            <td>{{ matricula.apoderado.codigo }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Nombre</strong></td>
+                            <td>{{ matricula.apoderado.nombre_completo }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Teléfono</strong></td>
+                            <td>{{ matricula.apoderado.celular }}</td>
+                        </tr>
+                    </table>
+
+                    <table class="subtabla">
+                        <tr>
+                            <th colspan="2">Datos del Alumno</th>
+                        </tr>
+                        <tr>
+                            <td><strong>Código</strong></td>
+                            <td>{{ matricula.alumno.codigo }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Nombre</strong></td>
+                            <td>{{ matricula.alumno.nombres_completos }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tipo</strong></td>
+                            <td>{{ matricula.alumno.get_grado_estudios_display }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Teléfono</strong></td>
+                            <td>{{ matricula.alumno.numero_whatsapp }}</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
 </body>
+
 </html>

@@ -17,6 +17,21 @@ from .forms import *
 from django.contrib.admin.views.decorators import staff_member_required
 from django.utils import timezone
 from django.db import transaction
+import os
+from django.conf import settings
+from django.contrib.staticfiles import finders
+from .models import MensajeWhatsAppConfig
+
+def link_callback(uri, rel):
+    if uri.startswith(settings.MEDIA_URL):
+        path = os.path.join(settings.MEDIA_ROOT, uri.replace(settings.MEDIA_URL, ""))
+    elif uri.startswith(settings.STATIC_URL):
+        path = finders.find(uri.replace(settings.STATIC_URL, ""))
+    else:
+        return uri
+    if not os.path.isfile(path):
+        raise Exception(f'Media URI inválido: {path}')
+    return path
 
 # Vista para editar el template de WhatsApp
 @staff_member_required
@@ -515,7 +530,9 @@ def ficha_matricula_pdf(request, pk):
     template = get_template(template_path)
     html = template.render(context)
     
-    pisa_status = pisa.CreatePDF(html, dest=response)
+    pisa_status = pisa.CreatePDF(
+        html, dest=response, link_callback=link_callback
+    )
     
     if pisa_status.err:
         return HttpResponse('Error al generar el PDF', status=500)
