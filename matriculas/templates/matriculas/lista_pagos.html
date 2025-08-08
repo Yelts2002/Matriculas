@@ -20,6 +20,7 @@
         <th class="px-4 py-3">Vencimiento</th>
         <th class="px-4 py-3">Fecha Pago</th>
         <th class="px-4 py-3">Estado</th>
+        <th class="px-4 py-3">Tipo de Pago</th>        
         <th class="px-4 py-3">Observación</th>
         <th class="px-4 py-3">Acciones</th>
       </tr>
@@ -48,6 +49,7 @@
             </span>
           {% endif %}
         </td>
+        <td class="px-4 py-2">S/ {{ pago.forma_pago }}</td>        
         <td class="px-4 py-2 text-gray-600">{{ pago.observacion|truncatewords:5 }}</td>
         <td class="px-4 py-2 space-y-1">
           {% if pago.estado == 'pendiente' %}

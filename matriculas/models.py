@@ -130,15 +130,16 @@ class Alumno(models.Model):
     sexo = models.CharField(max_length=1, choices=SEXO_OPCIONES)
     celular_llamadas = models.CharField(max_length=9)
     numero_whatsapp = models.CharField(max_length=9)
-    fecha_nacimiento = models.DateField()
+    fecha_nacimiento = models.DateField(blank=True, null=True)
     fecha_registro = models.DateTimeField(auto_now_add=True)
     activo = models.BooleanField(default=True)
-    colegio_de_procedencia = models.CharField(max_length=100)
-    carrera_tentativa = models.CharField(max_length=100)
+    colegio_de_procedencia = models.CharField(max_length=100, blank=True, null=True)
+    carrera_tentativa = models.CharField(max_length=100, blank=True, null=True)
     foto_previa = models.ImageField(upload_to="alumnos/fotos_previas/", blank=True, null=True)
     foto_frente = models.ImageField(upload_to="alumnos/fotos_frente/", blank=True, null=True)
     foto_corte = models.ImageField(upload_to="alumnos/fotos_corte/", blank=True, null=True)
-    sexo_data = models.CharField(max_length=10, choices=[('hija', 'hija'), ('hijo', 'hijo')])
+    sexo_data = models.CharField(max_length=10, choices=[('hija', 'hija'), ('hijo', 'hijo')], blank=True)
+    direccion_alumno = models.TextField(max_length=150, blank=True, null=True)
 
     class Meta:
         verbose_name = "Alumno"
@@ -174,7 +175,6 @@ class Alumno(models.Model):
     def __str__(self):
         return f"{self.codigo} - {self.nombres_completos}"
 
-
 class Apoderado(models.Model):
     PARENTESCO_CHOICES = [
         ('Padre', 'Padre'), ('Madre', 'Madre'), ('Hermano', 'Hermano'), ('Hermana', 'Hermana'),
@@ -187,7 +187,7 @@ class Apoderado(models.Model):
     nombre_completo = models.CharField(max_length=100)
     dni = models.CharField(max_length=8, unique=True)
     celular = models.CharField(max_length=9)
-    direccion = models.TextField()
+    direccion = models.TextField(max_length=150, blank=True, null=True)
     parentesco = models.CharField(max_length=10, choices=PARENTESCO_CHOICES)
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
@@ -211,9 +211,19 @@ class Apoderado(models.Model):
 class Matricula(models.Model):
     ESTADO_CHOICES = [
         ('activa', 'Activa'), ('congelada', 'Congelada'), ('finalizada', 'Finalizada'),]
-    MODALIDADES = [('presencial', 'Presencial'), ('virtual', 'Virtual'),]
-    TIPOS_ALUMNO = [ ('regular', 'REGULAR'), ('promocion', 'PROMOCION'), ('beca50', 'BECA 50%'), ('beca100', 'BECA 100%'), ('fondo_social', 'FONDO SOCIAL'),]
+    MODALIDADES = [('presencial', 'Presencial'), ('virtual', 'Virtual'),('mixta', 'Mixta')]
+    TIPOS_MATRICULA = [ ('regular', 'REGULAR'), ('promocion', 'PROMOCION'), ('beca50', 'BECA 50%'), ('beca100', 'BECA 100%'), ('fondo_social', 'FONDO SOCIAL'),]
 
+    TIPOS_ALUMNO = [
+        ('pre_uni_promo', 'Ciclo Pre Universitario Promoción'),
+        ('pre_uni_excelencia', 'Ciclo Pre Universitario Excelencia'),
+        ('pre_uni_provincia', 'Ciclo Pre Universitario Provincia'),
+        ('pre_uni_virtual', 'Ciclo Pre Universitario Virtual'),
+        ('3_4_5_preferente', 'Ciclo 3ro, 4to y 5to Preferente'),
+        ('1_2_3_basico', 'Ciclo 1ro, 2do y 3ro Básico'),
+        ('cepunc_manana', 'CEPUNC Mañana')]
+    
+    tipo_alumno = models.CharField(max_length=20, choices=TIPOS_ALUMNO, default='pre_uni_promo')
     codigo = models.CharField(max_length=10, unique=True, blank=True, editable=False)
     alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE, related_name='matriculas')
     apoderado = models.ForeignKey(Apoderado, on_delete=models.CASCADE)
@@ -225,7 +235,7 @@ class Matricula(models.Model):
     horario = models.ForeignKey(Horario, on_delete=models.PROTECT)
     fecha_matricula = models.DateField(auto_now_add=True)
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='activa')
-    tipo_alumno = models.CharField(max_length=20, choices=TIPOS_ALUMNO, default='regular')
+    tipo_matricula = models.CharField(max_length=20, choices=TIPOS_MATRICULA, default='regular')
     usuario_registro = models.ForeignKey('auth.User', on_delete=models.PROTECT, related_name='matriculas_registradas')
 
     class Meta:
@@ -280,55 +290,6 @@ class Matricula(models.Model):
         )
         
         return nueva_matricula
-    
-class Pago(models.Model):
-    ESTADO_PAGO = [
-        ('pendiente', 'Pendiente'),
-        ('pagado', 'Pagado'),
-        ('observado', 'Observado'),
-    ]
-
-    TIPO_PAGO = [
-        ('cuota', 'Cuota mensual'),
-        ('matricula', 'Matrícula'),
-        ('otros', 'Otros'),
-    ]
-
-    matricula = models.ForeignKey('Matricula', on_delete=models.CASCADE, related_name='pagos')
-    numero_cuota = models.IntegerField(null=True, blank=True)
-    tipo_pago = models.CharField(max_length=20, choices=TIPO_PAGO)
-    monto_programado = models.DecimalField(max_digits=10, decimal_places=2)
-    monto_pagado = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    fecha_vencimiento = models.DateField()
-    fecha_pago = models.DateField(null=True, blank=True)
-    estado = models.CharField(max_length=20, choices=ESTADO_PAGO, default='pendiente')
-    observacion = models.TextField(blank=True)
-    usuario_registro = models.ForeignKey(User, on_delete=models.PROTECT, related_name='pagos_registrados')
-    fecha_registro = models.DateTimeField(auto_now_add=True)
-    
-    def save(self, *args, **kwargs):
-        if self.estado == 'pendiente':
-            self.monto_pagado = 0
-            self.fecha_pago = None
-        super().save(*args, **kwargs)
-
-    class Meta:
-        verbose_name = "Pago"
-        verbose_name_plural = "Pagos"
-        ordering = ['fecha_vencimiento']
-        unique_together = ('matricula', 'numero_cuota', 'tipo_pago')
-
-    def __str__(self):
-        cuota_info = f" - Cuota {self.numero_cuota}" if self.numero_cuota else ""
-        return f"{self.matricula.codigo}{cuota_info} - {self.get_estado_display()}"
-
-    def confirmar_pago(self, monto_pagado, usuario, fecha_pago=None):
-        self.monto_pagado = monto_pagado
-        self.fecha_pago = fecha_pago or timezone.now().date()
-        self.estado = 'pagado'
-        self.usuario_registro = usuario
-        self.save()
-
 
 # Modelo para guardar el template editable del mensaje de WhatsApp
 
@@ -341,8 +302,6 @@ class MensajeWhatsAppConfig(models.Model):
 
     def __str__(self):
         return self.nombre
-
-
 
 # Método directo en el modelo Pago
 class Pago(models.Model):
@@ -357,7 +316,14 @@ class Pago(models.Model):
         ('matricula', 'Matrícula'),
         ('otros', 'Otros'),
     ]
+    Forma_pago = [
+        ('Efectivo', 'Efectivo'),
+        ('Yape', 'Yape'),
+        ('Transferencia', 'Transferencia bancaria'),
+        ('Plin', 'Plin'),
+    ]
 
+    forma_pago = models.CharField(max_length=20, choices=Forma_pago, default='Efectivo')
     matricula = models.ForeignKey('Matricula', on_delete=models.CASCADE, related_name='pagos')
     numero_cuota = models.IntegerField(null=True, blank=True)
     tipo_pago = models.CharField(max_length=20, choices=TIPO_PAGO)
@@ -369,12 +335,6 @@ class Pago(models.Model):
     observacion = models.TextField(blank=True)
     usuario_registro = models.ForeignKey(User, on_delete=models.PROTECT, related_name='pagos_registrados')
     fecha_registro = models.DateTimeField(auto_now_add=True)
-    
-    def save(self, *args, **kwargs):
-        if self.estado == 'pendiente':
-            self.monto_pagado = 0
-            self.fecha_pago = None
-        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Pago"
@@ -385,6 +345,12 @@ class Pago(models.Model):
     def __str__(self):
         cuota_info = f" - Cuota {self.numero_cuota}" if self.numero_cuota else ""
         return f"{self.matricula.codigo}{cuota_info} - {self.get_estado_display()}"
+
+    def save(self, *args, **kwargs):
+        if self.estado == 'pendiente':
+            self.monto_pagado = 0
+            self.fecha_pago = None
+        super().save(*args, **kwargs)
 
     def confirmar_pago(self, monto_pagado, usuario, fecha_pago=None):
         self.monto_pagado = monto_pagado
@@ -400,14 +366,20 @@ class Pago(models.Model):
         from urllib.parse import quote
         config = MensajeWhatsAppConfig.objects.filter(activo=True).first()
         if not config:
-            template = "Estimado/a {apoderado}, le recordamos que tiene una cuota pendiente para la matrícula de {alumno} (cuota {numero_cuota}) por S/ {monto} con vencimiento el {fecha_vencimiento}. Por favor, regularice su pago para evitar inconvenientes."
+            template = (
+                "Estimado/a {apoderado}, le recordamos que tiene una cuota pendiente "
+                "para la matrícula de {alumno} (cuota {numero_cuota}) por S/ {monto} "
+                "con vencimiento el {fecha_vencimiento}. Por favor, regularice su pago para evitar inconvenientes."
+            )
         else:
             template = config.template
+        
         apoderado = self.matricula.apoderado.nombre_completo
         alumno = self.matricula.alumno.nombres_completos
         numero_cuota = self.numero_cuota or "-"
         monto = self.monto_programado
         fecha_vencimiento = self.fecha_vencimiento.strftime("%d/%m/%Y")
+
         mensaje = template.format(
             apoderado=apoderado,
             alumno=alumno,
@@ -415,11 +387,11 @@ class Pago(models.Model):
             monto=monto,
             fecha_vencimiento=fecha_vencimiento
         )
+
         telefono = self.matricula.apoderado.celular
         mensaje_encoded = quote(mensaje)
         url = f"https://wa.me/51{telefono}?text={mensaje_encoded}"
         return url
-
 
 class Perfil(models.Model):
     TIPO_USUARIO_CHOICES = [

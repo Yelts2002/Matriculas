@@ -4,91 +4,80 @@
 {% block title %}Registrar Alumno{% endblock %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto px-4 py-8">
+<div class="max-w-6xl mx-auto px-4 py-8">
     <h2 class="text-3xl font-bold text-center text-blue-700 mb-8 flex items-center justify-center gap-2">
-        <i class="bi bi-person-plus-fill"></i>
-        Registrar Nuevo Alumno
+        <i class="bi bi-person-plus-fill"></i> Registrar Nuevo Alumno
     </h2>
 
     <form method="post" enctype="multipart/form-data" class="space-y-6">
         {% csrf_token %}
 
         <!-- Datos Personales -->
-        <div class="bg-white shadow-md rounded-lg p-6 border">
+        <div class="bg-white shadow-md rounded-lg p-6 border border-blue-100">
             <h3 class="text-lg font-semibold text-blue-700 flex items-center gap-2 mb-4">
                 <i class="bi bi-person-vcard"></i> Datos Personales
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ form.nombres_completos.label }}</label>
-                    {{ form.nombres_completos|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500" }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ form.dni.label }}</label>
-                    {{ form.dni|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm" }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ form.fecha_nacimiento.label }}</label>
-                    {{ form.fecha_nacimiento|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm" }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ form.sexo.label }}</label>
-                    {{ form.sexo|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm" }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ form.sexo_data.label }}</label>
-                    {{ form.sexo_data|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm" }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ form.grado_estudios.label }}</label>
-                    {{ form.grado_estudios|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm" }}
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700">{{ form.colegio_de_procedencia.label }}</label>
-                    {{ form.colegio_de_procedencia|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm" }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ form.carrera_tentativa.label }}</label>
-                    {{ form.carrera_tentativa|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm" }}
-                </div>
+                {% for field in form.visible_fields %}
+                    {% if field.name in "nombres_completos dni fecha_nacimiento sexo direccion_alumno grado_estudios colegio_de_procedencia carrera_tentativa" %}
+                        <div class="{% if field.name == 'colegio_de_procedencia' %}md:col-span-2{% endif %}">
+                            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                                {{ field.label }}
+                            </label>
+                            {{ field|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500" }}
+                            {% if field.help_text %}
+                                <p class="text-xs text-gray-500">{{ field.help_text }}</p>
+                            {% endif %}
+                            {% if field.errors %}
+                                <p class="text-sm text-red-600">{{ field.errors|striptags }}</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
             </div>
         </div>
 
         <!-- Información de Contacto -->
-        <div class="bg-white shadow-md rounded-lg p-6 border">
+        <div class="bg-white shadow-md rounded-lg p-6 border border-gray-200">
             <h3 class="text-lg font-semibold text-gray-700 flex items-center gap-2 mb-4">
                 <i class="bi bi-telephone-fill"></i> Información de Contacto
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ form.celular_llamadas.label }}</label>
-                    {{ form.celular_llamadas|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm" }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ form.numero_whatsapp.label }}</label>
-                    {{ form.numero_whatsapp|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm" }}
-                </div>
+                {% for field in form.visible_fields %}
+                    {% if field.name in "celular_llamadas numero_whatsapp" %}
+                        <div>
+                            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                                {{ field.label }}
+                            </label>
+                            {{ field|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm" }}
+                            {% if field.errors %}
+                                <p class="text-sm text-red-600">{{ field.errors|striptags }}</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
             </div>
         </div>
 
         <!-- Fotografías -->
-        <div class="bg-white shadow-md rounded-lg p-6 border">
+        <div class="bg-white shadow-md rounded-lg p-6 border border-blue-100">
             <h3 class="text-lg font-semibold text-blue-500 flex items-center gap-2 mb-4">
                 <i class="bi bi-camera-fill"></i> Fotografías del Alumno
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ form.foto_previa.label }}</label>
-                    {{ form.foto_previa|add_class:"mt-1 block w-full text-sm border rounded-md p-2" }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ form.foto_frente.label }}</label>
-                    {{ form.foto_frente|add_class:"mt-1 block w-full text-sm border rounded-md p-2" }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ form.foto_corte.label }}</label>
-                    {{ form.foto_corte|add_class:"mt-1 block w-full text-sm border rounded-md p-2" }}
-                </div>
+                {% for field in form.visible_fields %}
+                    {% if field.name in "foto_previa foto_frente foto_corte" %}
+                        <div>
+                            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                                {{ field.label }}
+                            </label>
+                            {{ field|add_class:"mt-1 block w-full text-sm border rounded-md p-2" }}
+                            {% if field.errors %}
+                                <p class="text-sm text-red-600">{{ field.errors|striptags }}</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
             </div>
         </div>
 

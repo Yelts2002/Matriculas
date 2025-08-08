@@ -16,7 +16,6 @@ from .models import CodigoManager
 from .forms import *
 from django.contrib.admin.views.decorators import staff_member_required
 from django.utils import timezone
-from django.db import transaction
 import os
 from django.conf import settings
 from django.contrib.staticfiles import finders
@@ -420,42 +419,48 @@ class MatriculaCreateView(LoginRequiredMixin, CreateView):
                 form.fields['apoderado'].initial = apoderado
         return form
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context['monto_form'] = MontoCuotasForm(self.request.POST)
+        else:
+            initial = {'cuotas': 1}
+            context['monto_form'] = MontoCuotasForm(initial=initial)
+        return context
+
     def form_valid(self, form):
+        context = self.get_context_data()
+        monto_form = context['monto_form']
+        
+        if not monto_form.is_valid():
+            return self.render_to_response(self.get_context_data(form=form, monto_form=monto_form))
+        
         matricula = form.save(commit=False)
-
-        horario = form.cleaned_data.get('horario')
-        if horario:
-            matricula.turno = horario.turno  # Se asigna automáticamente el turno desde el horario
-
         matricula.usuario_registro = self.request.user
+        
+        # Calcular montos
+        montos = []
+        for i in range(1, int(monto_form.cleaned_data['cuotas']) + 1):
+            montos.append(float(monto_form.cleaned_data[f'monto_cuota_{i}']))
+        
+        matricula.monto = sum(montos)
+        matricula.cuotas = monto_form.cleaned_data['cuotas']
         matricula.save()
 
-        # === Generar pagos automáticos ===
-        monto_total = matricula.monto
-        cuotas = matricula.cuotas
-        monto_por_cuota = round(monto_total / cuotas, 2)
-        fecha_base = timezone.now().date()
-
-        for i in range(1, cuotas + 1):
-            fecha_vencimiento = fecha_base + timezone.timedelta(days=30 * (i - 1))
+        # Crear pagos
+        for i, monto in enumerate(montos, start=1):
             Pago.objects.create(
                 matricula=matricula,
                 numero_cuota=i,
                 tipo_pago='cuota',
-                monto_programado=monto_por_cuota,
-                fecha_vencimiento=fecha_vencimiento,
+                monto_programado=monto_form.cleaned_data[f'monto_cuota_{i}'],
+                fecha_vencimiento = monto_form.cleaned_data[f'fecha_cuota_{i}'],
                 estado='pendiente',
                 usuario_registro=self.request.user
             )
 
-        messages.success(self.request, f'Matrícula "{matricula.codigo}"registrada exitosamente.')
+        messages.success(self.request, f'Matrícula "{matricula.codigo}" registrada exitosamente.')
         return redirect('matriculas:matricula_detail', pk=matricula.pk)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.alumno:
-            context['alumno'] = self.alumno
-        return context
 
 class MatriculaUpdateView(LoginRequiredMixin, UpdateView):
     model = Matricula
@@ -463,45 +468,52 @@ class MatriculaUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'matriculas/matricula_form.html'
     success_url = reverse_lazy('matriculas:matricula_list')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context['monto_form'] = MontoCuotasForm(self.request.POST)
+        else:
+            initial = {'cuotas': self.object.cuotas}
+            pagos = self.object.pagos.order_by('numero_cuota')
+            for i, pago in enumerate(pagos, start=1):
+                initial[f'monto_cuota_{i}'] = pago.monto_programado
+            
+            context['monto_form'] = MontoCuotasForm(initial=initial)
+        return context
+
     def form_valid(self, form):
+        context = self.get_context_data()
+        monto_form = context['monto_form']
+        
+        if not monto_form.is_valid():
+            return self.render_to_response(self.get_context_data(form=form, monto_form=monto_form))
+        
         matricula = form.save(commit=False)
         
-        original_matricula = Matricula.objects.get(pk=matricula.pk)
+        # Calcular montos
+        montos = []
+        for i in range(1, int(monto_form.cleaned_data['cuotas']) + 1):
+            montos.append(float(monto_form.cleaned_data[f'monto_cuota_{i}']))
+        
+        matricula.monto = sum(montos)
+        matricula.cuotas = monto_form.cleaned_data['cuotas']
+        matricula.save()
 
-        monto_cambiado = original_matricula.monto != matricula.monto
-        cuotas_cambiadas = original_matricula.cuotas != matricula.cuotas
+        # Actualizar pagos
+        matricula.pagos.all().delete()
+        for i, monto in enumerate(montos, start=1):
+            Pago.objects.create(
+                matricula=matricula,
+                numero_cuota=i,
+                tipo_pago='cuota',
+                monto_programado=monto,
+                fecha_vencimiento=timezone.now().date() + timezone.timedelta(days=30*(i-1)),
+                estado='pendiente',
+                usuario_registro=self.request.user
+            )
 
-        with transaction.atomic():
-            matricula.save()
-
-            if monto_cambiado or cuotas_cambiadas:
-                Pago.objects.filter(matricula=matricula).delete()
-
-                monto_total = matricula.monto
-                cuotas = matricula.cuotas
-                
-                if cuotas > 0:
-                    monto_por_cuota = round(monto_total / cuotas, 2)
-                else:
-                    monto_por_cuota = monto_total
-
-                fecha_base = timezone.now().date()
-
-                for i in range(1, cuotas + 1):
-                    fecha_vencimiento = fecha_base + timezone.timedelta(days=30 * (i - 1))
-                    Pago.objects.create(
-                        matricula=matricula,
-                        numero_cuota=i,
-                        tipo_pago='cuota',
-                        monto_programado=monto_por_cuota,
-                        fecha_vencimiento=fecha_vencimiento,
-                        estado='pendiente',
-                        usuario_registro=self.request.user
-                    )
-                messages.info(self.request, 'Los pagos de la matrícula han sido recalculados y actualizados.')
-            
-            messages.success(self.request, 'Matrícula actualizada exitosamente')
-            return super().form_valid(form)
+        messages.success(self.request, 'Matrícula actualizada exitosamente')
+        return super().form_valid(form)
 
 class MatriculaDetailView(LoginRequiredMixin, DetailView):
     model = Matricula
@@ -520,9 +532,10 @@ class MatriculaDeleteView(LoginRequiredMixin, DeleteView):
 @login_required
 def ficha_matricula_pdf(request, pk):
     matricula = get_object_or_404(Matricula, pk=pk)
-    
+    pagos = matricula.pagos.all()
     template_path = 'matriculas/ficha_matricula_pdf.html'
-    context = {'matricula': matricula}
+    context = {'matricula': matricula
+               , 'pagos': pagos}
     
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'filename="ficha_matricula_{matricula.codigo}.pdf"'

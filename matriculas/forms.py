@@ -109,14 +109,23 @@ class AlumnoForm(forms.ModelForm):
         # Establecer el formato de fecha en el campo
         self.fields['fecha_nacimiento'].widget.format = '%Y-%m-%d'
         self.fields['fecha_nacimiento'].input_formats = ['%Y-%m-%d']
-
+        self.fields['fecha_nacimiento'].required = False
+        # Hacer campos no obligatorios
+        self.fields['colegio_de_procedencia'].required = False
+        self.fields['carrera_tentativa'].required = False
+        self.fields['foto_previa'].required = False
+        self.fields['foto_frente'].required = False
+        self.fields['foto_corte'].required = False
+        self.fields['sexo_data'].required = False
+        self.fields['direccion_alumno'].required = False
+        
     class Meta:
         model = Alumno
         fields = [
-            'grado_estudios', 'nombres_completos', 'dni', 'sexo', 
+            'nombres_completos', 'dni', 'grado_estudios', 'sexo', 
             'celular_llamadas', 'numero_whatsapp', 'fecha_nacimiento',
             'colegio_de_procedencia', 'carrera_tentativa', 'sexo_data',
-            'foto_previa', 'foto_frente', 'foto_corte'
+            'foto_previa', 'foto_frente', 'foto_corte', 'direccion_alumno'
         ]
         widgets = {
             'grado_estudios': forms.Select(attrs={'class': 'form-select'}),
@@ -145,12 +154,27 @@ class AlumnoForm(forms.ModelForm):
             }),
             'colegio_de_procedencia': forms.TextInput(attrs={'class': 'form-control'}),
             'carrera_tentativa': forms.TextInput(attrs={'class': 'form-control'}),
-            'sexo_data': forms.Select(attrs={'class': 'form-select'}),
             'foto_previa': forms.FileInput(attrs={'class': 'form-control'}),
             'foto_frente': forms.FileInput(attrs={'class': 'form-control'}),
             'foto_corte': forms.FileInput(attrs={'class': 'form-control'}),
+            'direccion_alumno': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Dirección completa'
+            }),
         }
     
+    def clean_genero(self):
+        cleaned_data = super().clean()
+        sexo = cleaned_data.get('sexo')
+        
+        # Automáticamente establecer sexo_data basado en sexo
+        if sexo == 'M':
+            cleaned_data['sexo_data'] = 'hijo'
+        elif sexo == 'F':
+            cleaned_data['sexo_data'] = 'hija'
+        
+        return cleaned_data
     def clean_dni(self):
         dni = self.cleaned_data['dni']
         if not dni.isdigit() or len(dni) != 8:
@@ -213,6 +237,10 @@ class ApoderadoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['direccion'].required = False
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         
         # Filtrar alumnos sin apoderado o que ya están asignados a este apoderado
         if self.instance.pk:
@@ -262,28 +290,30 @@ class MatriculaForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        # Configurar querysets iniciales
         self.fields['alumno'].queryset = Alumno.objects.filter(activo=True)
         self.fields['apoderado'].queryset = Apoderado.objects.all()
         self.fields['ciclo'].queryset = Ciclo.objects.filter(activo=True)
         self.fields['turno'].queryset = Turno.objects.all()
         self.fields['horario'].queryset = Horario.objects.none()
-        
-        # Si es una instancia existente, configurar los valores
-        if self.instance.pk:
-            self.fields['horario'].queryset = Horario.objects.filter(turno=self.instance.turno)
-        
-        # Si hay datos en el POST, configurar dinámicamente
+
+        # Verificar si se está enviando desde el POST
         if 'turno' in self.data:
             try:
                 turno_id = int(self.data.get('turno'))
                 self.fields['horario'].queryset = Horario.objects.filter(turno_id=turno_id)
             except (ValueError, TypeError):
                 pass
+        elif self.initial.get('turno'):
+            # Si hay un valor inicial (por ejemplo, en creación con valores preestablecidos)
+            turno = self.initial.get('turno')
+            self.fields['horario'].queryset = Horario.objects.filter(turno=turno)
+        elif self.instance.pk and self.instance.turno:
+            # Si se está editando
+            self.fields['horario'].queryset = Horario.objects.filter(turno=self.instance.turno)
 
     class Meta:
         model = Matricula
-        fields = ['alumno', 'apoderado', 'monto', 'cuotas', 'modalidad', 'ciclo', 'turno', 'horario', 'estado', 'tipo_alumno']
+        fields = ['alumno', 'apoderado','modalidad', 'ciclo', 'turno', 'horario', 'estado', 'tipo_matricula', 'tipo_alumno']
         widgets = {
             'alumno': forms.Select(attrs={
                 'class': 'form-select select2',
@@ -293,29 +323,14 @@ class MatriculaForm(forms.ModelForm):
                 'class': 'form-select select2',
                 'data-placeholder': 'Seleccione un apoderado'
             }),
-            'monto': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'step': '0.01',
-                'min': '0'
-            }),
-            'cuotas': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'min': '1',
-                'max': '12'
-            }),
+
             'modalidad': forms.Select(attrs={'class': 'form-select'}),
             'ciclo': forms.Select(attrs={'class': 'form-select'}),
-            'turno': forms.Select(attrs={
-                'class': 'form-select',
-                'onchange': 'updateHorarios()'
-            }),
+            'turno': forms.Select(attrs={'class': 'form-select'}),
             'horario': forms.Select(attrs={'class': 'form-select'}),
             'estado': forms.Select(attrs={'class': 'form-select'}),
+            'tipo_matricula': forms.Select(attrs={'class': 'form-select'}),
             'tipo_alumno': forms.Select(attrs={'class': 'form-select'}),
-        }
-        labels = {
-            'monto': 'Monto total (S/)',
-            'cuotas': 'Número de cuotas'
         }
     
     def clean(self):
@@ -343,6 +358,53 @@ class MatriculaForm(forms.ModelForm):
         
         if turno and horario and horario.turno != turno:
             raise ValidationError("El horario seleccionado no corresponde al turno elegido")
+
+class MontoCuotasForm(forms.Form):
+    cuotas = forms.IntegerField(
+        min_value=1,
+        max_value=6,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'id': 'id_cuotas',
+            'onchange': 'actualizarCamposCuotas()'
+        })
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        num_cuotas = self.data.get('cuotas', 1) if self.data else self.initial.get('cuotas', 1)
+
+        try:
+            num_cuotas = int(num_cuotas)
+        except ValueError:
+            num_cuotas = 1
+
+        for i in range(1, num_cuotas + 1):
+            field_monto = f'monto_cuota_{i}'
+            field_fecha = f'fecha_cuota_{i}'
+
+            self.fields[field_monto] = forms.DecimalField(
+                label=f'Monto Cuota {i}',
+                max_digits=10,
+                decimal_places=2,
+                widget=forms.NumberInput(attrs={
+                    'class': 'form-control monto-cuota',
+                    'step': '0.01',
+                    'oninput': 'calcularTotal()'
+                })
+            )
+            if field_monto in self.initial:
+                self.fields[field_monto].initial = self.initial[field_monto]
+
+            self.fields[field_fecha] = forms.DateField(
+                label=f'Fecha Vencimiento Cuota {i}',
+                widget=forms.DateInput(attrs={
+                    'class': 'form-control',
+                    'type': 'date',
+                })
+            )
+            if field_fecha in self.initial:
+                self.fields[field_fecha].initial = self.initial[field_fecha]
 
 class ReactivarMatriculaForm(forms.Form):
     nuevo_ciclo = forms.ModelChoiceField(
@@ -389,7 +451,7 @@ class PagoForm(forms.ModelForm):
         fields = [
             'numero_cuota', 'tipo_pago', 'monto_programado',
             'monto_pagado', 'fecha_vencimiento', 'fecha_pago',
-            'estado', 'observacion'
+            'estado', 'observacion', 'forma_pago'
         ]
         widgets = {
             'fecha_vencimiento': forms.DateInput(attrs={'type': 'date'}),
