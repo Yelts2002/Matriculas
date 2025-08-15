@@ -45,6 +45,75 @@ class Ciclo(models.Model):
             
         return ciclos_a_finalizar.count()
 
+class Horario(models.Model):
+    DIAS_SEMANA = [
+        ('L', 'Lunes'),
+        ('M', 'Martes'),
+        ('Mi', 'Miércoles'),
+        ('J', 'Jueves'),
+        ('V', 'Viernes'),
+        ('S', 'Sábado'),
+        ('D', 'Domingo'),
+    ]
+
+    nombre = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Nombre del horario",
+        help_text="Ej: Turno Mañana, Grupo Intensivo"
+    )
+
+    # Bloque 1
+    hora_inicio1 = models.TimeField(null=True, blank=True)
+    hora_fin1 = models.TimeField(null=True, blank=True)
+    dias_bloque1 = models.CharField(max_length=50)
+
+    # Bloque 2 (opcional)
+    hora_inicio2 = models.TimeField(null=True, blank=True)
+    hora_fin2 = models.TimeField(null=True, blank=True)
+    dias_bloque2 = models.CharField(max_length=50, blank=True)
+
+    def get_dias_bloque1_display(self):
+        dias_dict = dict(self.DIAS_SEMANA)
+        return ', '.join([dias_dict.get(d, d) for d in self.dias_bloque1.split(',') if d])
+
+    def get_dias_bloque2_display(self):
+        if not self.dias_bloque2:
+            return ''
+        dias_dict = dict(self.DIAS_SEMANA)
+        return ', '.join([dias_dict.get(d, d) for d in self.dias_bloque2.split(',') if d])
+
+    def clean(self):
+        errores = {}
+
+        # Validar bloque 2 si se especifica parcialmente
+        if any([self.hora_inicio2, self.hora_fin2, self.dias_bloque2]):
+            if not all([self.hora_inicio2, self.hora_fin2, self.dias_bloque2]):
+                errores['hora_inicio2'] = "Si especifica un segundo bloque horario, debe completar todos sus campos"
+
+        # Validar horas de bloque 1
+        if self.hora_inicio1 and self.hora_fin1:
+            if self.hora_fin1 <= self.hora_inicio1:
+                errores['hora_fin1'] = "La hora de fin debe ser posterior a la hora de inicio en el Bloque 1"
+
+        # Validar horas de bloque 2
+        if self.hora_inicio2 and self.hora_fin2:
+            if self.hora_fin2 <= self.hora_inicio2:
+                errores['hora_fin2'] = "La hora de fin debe ser posterior a la hora de inicio en el Bloque 2"
+
+        if errores:
+            raise ValidationError(errores)
+
+    def __str__(self):
+        bloques = []
+        if self.hora_inicio1 and self.hora_fin1:
+            bloques.append(f"{self.hora_inicio1.strftime('%H:%M')}-{self.hora_fin1.strftime('%H:%M')} ({self.dias_bloque1})")
+        if self.hora_inicio2 and self.hora_fin2:
+            bloques.append(f"{self.hora_inicio2.strftime('%H:%M')}-{self.hora_fin2.strftime('%H:%M')} ({self.dias_bloque2})")
+
+        bloques_str = " | ".join(bloques) if bloques else "Sin horario definido"
+        return f"{self.nombre} - {bloques_str}"
+
 class Turno(models.Model):
     nombre = models.CharField(max_length=50, unique=True, verbose_name="Nombre del turno")
 
@@ -56,19 +125,8 @@ class Turno(models.Model):
     def __str__(self):
         return self.nombre
 
-class Horario(models.Model):
-    turno = models.ForeignKey(Turno, on_delete=models.CASCADE, related_name='horarios', verbose_name="Turno")
-    hora_inicio = models.TimeField(verbose_name="Hora de inicio")
-    hora_fin = models.TimeField(verbose_name="Hora de fin")
-
-    class Meta:
-        verbose_name = "Horario"
-        verbose_name_plural = "Horarios"
-        ordering = ['hora_inicio']
-        unique_together = ('turno', 'hora_inicio', 'hora_fin')  # evita duplicados
-
-    def __str__(self):
-        return f"{self.turno.nombre} - {self.hora_inicio.strftime('%I:%M %p')} a {self.hora_fin.strftime('%I:%M %p')}"
+from django.db.models import Max, IntegerField
+from django.db.models.functions import Substr, Cast
 
 class CodigoManager:
     @staticmethod
@@ -85,28 +143,35 @@ class CodigoManager:
         }
         
         prefijo = grado_map.get(grado_estudios, 'RSX')
-        ultimo_codigo = Alumno.objects.filter(
-            codigo__regex=rf'^{prefijo}\d+$'
-        ).aggregate(Max('codigo'))['codigo__max']
 
-        numero = int(ultimo_codigo[len(prefijo):]) + 1 if ultimo_codigo else 1
+        # Calcular el mayor número de forma real, no por orden de texto
+        sufijo_max = (
+            Alumno.objects
+            .filter(codigo__regex=rf'^{prefijo}\d+$')
+            .annotate(
+                num_sufijo=Cast(Substr('codigo', len(prefijo) + 1), IntegerField())
+            )
+            .aggregate(Max('num_sufijo'))['num_sufijo__max']
+        )
+
+        numero = (sufijo_max or 0) + 1
         return f"{prefijo}{numero:03d}"
 
     @staticmethod
     def generar_codigo_apoderado(codigo_alumno):
         if codigo_alumno.startswith('RP'):
-            return f"AP{codigo_alumno[1:]}"
+            return f"AP{codigo_alumno[2:]}" 
         elif codigo_alumno.startswith(('RS', 'EP')):
-            return f"AS{codigo_alumno[2:]}"
-        return f"AX{codigo_alumno[1:]}"
-
+            return f"AS{codigo_alumno[2:]}" 
+        return f"AX{codigo_alumno[2:]}" 
+         
     @staticmethod
     def generar_codigo_matricula(codigo_alumno):
         if codigo_alumno.startswith('RP'):
-            return f"MP{codigo_alumno[1:]}"
+            return f"MP{codigo_alumno[2:]}" 
         elif codigo_alumno.startswith(('RS', 'EP')):
             return f"MS{codigo_alumno[2:]}"
-        return f"MX{codigo_alumno[1:]}"
+        return f"MX{codigo_alumno[2:]}"
 
 
 class Alumno(models.Model):
@@ -147,6 +212,14 @@ class Alumno(models.Model):
         ordering = ['codigo']
 
     def save(self, *args, **kwargs):
+        # Establecer sexo_data automáticamente según sexo
+        if self.sexo == 'M':
+            self.sexo_data = 'hijo'
+        elif self.sexo == 'F':
+            self.sexo_data = 'hija'
+        else:
+            self.sexo_data = ''
+
         if self.pk:
             original = Alumno.objects.get(pk=self.pk)
             if original.grado_estudios != self.grado_estudios:
@@ -221,7 +294,8 @@ class Matricula(models.Model):
         ('pre_uni_virtual', 'Ciclo Pre Universitario Virtual'),
         ('3_4_5_preferente', 'Ciclo 3ro, 4to y 5to Preferente'),
         ('1_2_3_basico', 'Ciclo 1ro, 2do y 3ro Básico'),
-        ('cepunc_manana', 'CEPUNC Mañana')]
+        ('cepunc_manana', 'CEPUNC Mañana'),
+        ('cepunc_tarde', 'CEPUNC Tarde')]
     
     tipo_alumno = models.CharField(max_length=20, choices=TIPOS_ALUMNO, default='pre_uni_promo')
     codigo = models.CharField(max_length=10, unique=True, blank=True, editable=False)
@@ -269,8 +343,6 @@ class Matricula(models.Model):
             raise ValidationError("El nuevo ciclo no está activo")
         if nuevo_turno not in nuevo_ciclo.turnos.all():
             raise ValidationError("El turno seleccionado no está disponible en este ciclo")
-        if nuevo_horario.turno != nuevo_turno:
-            raise ValidationError("El horario no corresponde al turno seleccionado")
         if not self.alumno.activo:
             self.alumno.activo = True
             self.alumno.save()
@@ -335,6 +407,7 @@ class Pago(models.Model):
     observacion = models.TextField(blank=True)
     usuario_registro = models.ForeignKey(User, on_delete=models.PROTECT, related_name='pagos_registrados')
     fecha_registro = models.DateTimeField(auto_now_add=True)
+    foto_comprobante = models.ImageField(upload_to="comprobantes/", blank=True, null=True)
 
     class Meta:
         verbose_name = "Pago"

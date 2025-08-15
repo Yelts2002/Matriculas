@@ -74,34 +74,63 @@ class TurnoForm(forms.ModelForm):
         }
 
 class HorarioForm(forms.ModelForm):
+    DIAS_SEMANA = Horario.DIAS_SEMANA
+
+    dias_bloque1 = forms.MultipleChoiceField(
+        choices=DIAS_SEMANA,
+        widget=forms.CheckboxSelectMultiple(attrs={
+            'class': 'form-checkbox text-blue-600 rounded focus:ring focus:ring-blue-300'
+        }),
+        label="Días (Bloque 1)"
+    )
+
+    dias_bloque2 = forms.MultipleChoiceField(
+        choices=DIAS_SEMANA,
+        required=False,
+        widget=forms.CheckboxSelectMultiple(attrs={
+            'class': 'form-checkbox text-blue-600 rounded focus:ring focus:ring-blue-300'
+        }),
+        label="Días (Bloque 2)"
+    )
+
     class Meta:
         model = Horario
-        fields = ['turno', 'hora_inicio', 'hora_fin']
+        fields = [
+            'nombre',
+            'hora_inicio1', 'hora_fin1', 'dias_bloque1',
+            'hora_inicio2', 'hora_fin2', 'dias_bloque2'
+        ]
         widgets = {
-            'turno': forms.Select(attrs={'class': 'form-select'}),
-            'hora_inicio': forms.TimeInput(
-                format='%H:%M',
-                attrs={
-                    'type': 'time',
-                    'class': 'form-control'
-                }
-            ),
-            'hora_fin': forms.TimeInput(
-                format='%H:%M',
-                attrs={
-                    'type': 'time',
-                    'class': 'form-control'
-                }
-            ),
+            'nombre': forms.TextInput(attrs={
+                'class': 'w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200',
+                'placeholder': 'Ej: Turno Mañana, Grupo Intensivo'
+            }),
+            'hora_inicio1': forms.TimeInput(format='%H:%M', attrs={
+                'type': 'time',
+                'class': 'w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200',
+            }),
+            'hora_fin1': forms.TimeInput(format='%H:%M', attrs={
+                'type': 'time',
+                'class': 'w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200',
+            }),
+            'hora_inicio2': forms.TimeInput(format='%H:%M', attrs={
+                'type': 'time',
+                'class': 'w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200',
+            }),
+            'hora_fin2': forms.TimeInput(format='%H:%M', attrs={
+                'type': 'time',
+                'class': 'w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200',
+            }),
         }
-    
-    def clean(self):
-        cleaned_data = super().clean()
-        hora_inicio = cleaned_data.get('hora_inicio')
-        hora_fin = cleaned_data.get('hora_fin')
-        
-        if hora_inicio and hora_fin and hora_inicio >= hora_fin:
-            raise ValidationError("La hora de inicio debe ser anterior a la hora de fin")
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.dias_bloque1 = ','.join(self.cleaned_data.get('dias_bloque1', []))
+        instance.dias_bloque2 = ','.join(self.cleaned_data.get('dias_bloque2', []))
+        if commit:
+            instance.save()
+        return instance
+
 
 class AlumnoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -294,22 +323,7 @@ class MatriculaForm(forms.ModelForm):
         self.fields['apoderado'].queryset = Apoderado.objects.all()
         self.fields['ciclo'].queryset = Ciclo.objects.filter(activo=True)
         self.fields['turno'].queryset = Turno.objects.all()
-        self.fields['horario'].queryset = Horario.objects.none()
-
-        # Verificar si se está enviando desde el POST
-        if 'turno' in self.data:
-            try:
-                turno_id = int(self.data.get('turno'))
-                self.fields['horario'].queryset = Horario.objects.filter(turno_id=turno_id)
-            except (ValueError, TypeError):
-                pass
-        elif self.initial.get('turno'):
-            # Si hay un valor inicial (por ejemplo, en creación con valores preestablecidos)
-            turno = self.initial.get('turno')
-            self.fields['horario'].queryset = Horario.objects.filter(turno=turno)
-        elif self.instance.pk and self.instance.turno:
-            # Si se está editando
-            self.fields['horario'].queryset = Horario.objects.filter(turno=self.instance.turno)
+        self.fields['horario'].queryset = Horario.objects.all()
 
     class Meta:
         model = Matricula
@@ -351,13 +365,6 @@ class MatriculaForm(forms.ModelForm):
                     f"Este alumno ya tiene una matrícula {matriculas_existentes.first().get_estado_display().lower()} "
                     f"para el ciclo {ciclo.nombre}"
                 )
-        
-        # Validar que el horario pertenezca al turno seleccionado
-        turno = cleaned_data.get('turno')
-        horario = cleaned_data.get('horario')
-        
-        if turno and horario and horario.turno != turno:
-            raise ValidationError("El horario seleccionado no corresponde al turno elegido")
 
 class MontoCuotasForm(forms.Form):
     cuotas = forms.IntegerField(
@@ -446,24 +453,28 @@ class ReactivarMatriculaForm(forms.Form):
                 pass
 
 class PagoForm(forms.ModelForm):
-    class Meta:
-        model = Pago
-        fields = [
-            'numero_cuota', 'tipo_pago', 'monto_programado',
-            'monto_pagado', 'fecha_vencimiento', 'fecha_pago',
-            'estado', 'observacion', 'forma_pago'
-        ]
-        widgets = {
-            'fecha_vencimiento': forms.DateInput(attrs={'type': 'date'}),
-            'fecha_pago': forms.DateInput(attrs={'type': 'date'}),
-            'observacion': forms.Textarea(attrs={'rows': 2}),
-        }
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs.update({
                 'class': 'w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500'
             })
+            self.fields['foto_comprobante'].required = False
+
+    class Meta:
+        model = Pago
+        fields = [
+            'numero_cuota', 'tipo_pago', 'monto_programado',
+            'monto_pagado', 'fecha_vencimiento', 'fecha_pago',
+            'estado', 'observacion', 'forma_pago', 'foto_comprobante'
+        ]
+        
+        widgets = {
+            'fecha_vencimiento': forms.DateInput(attrs={'type': 'date'}),
+            'fecha_pago': forms.DateInput(attrs={'type': 'date'}),
+            'observacion': forms.Textarea(attrs={'rows': 2}),
+            'foto_comprobante': forms.FileInput(attrs={'class': 'form-control'}),
+        }
 
 class UsuarioCreateForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))

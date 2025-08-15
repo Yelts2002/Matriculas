@@ -3,6 +3,7 @@ from django.views.generic import *
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
+from django.http import HttpResponseRedirect
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 from django.views.decorators.http import require_POST
@@ -20,6 +21,9 @@ import os
 from django.conf import settings
 from django.contrib.staticfiles import finders
 from .models import MensajeWhatsAppConfig
+from io import BytesIO
+from django.core.files.base import ContentFile
+from .forms import UsuarioCreateForm
 
 def link_callback(uri, rel):
     if uri.startswith(settings.MEDIA_URL):
@@ -148,17 +152,23 @@ class HorarioListView(LoginRequiredMixin, ListView):
     model = Horario
     template_name = 'matriculas/horario_list.html'
     context_object_name = 'horarios'
+    paginate_by = 10
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        turno_id = self.request.GET.get('turno')
-        if turno_id:
-            queryset = queryset.filter(turno_id=turno_id)
-        return queryset
+        
+        search = self.request.GET.get('search')
+        if search:
+            queryset = queryset.filter(
+                models.Q(nombre__icontains=search) |
+                models.Q(dias_bloque1__icontains=search) |
+                models.Q(dias_bloque2__icontains=search)
+            )
+        return queryset.order_by('hora_inicio1')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['turnos'] = Turno.objects.all()
+        context['search_query'] = self.request.GET.get('search', '')
         return context
 
 class HorarioCreateView(LoginRequiredMixin, CreateView):
@@ -167,9 +177,19 @@ class HorarioCreateView(LoginRequiredMixin, CreateView):
     template_name = 'matriculas/horario_form.html'
     success_url = reverse_lazy('matriculas:horario_list')
 
+
     def form_valid(self, form):
-        messages.success(self.request, 'Horario creado exitosamente')
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        messages.success(
+            self.request,
+            f'Horario "{self.object.nombre}" creado exitosamente'
+        )
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Crear Nuevo Horario'
+        return context
 
 class HorarioUpdateView(LoginRequiredMixin, UpdateView):
     model = Horario
@@ -178,8 +198,30 @@ class HorarioUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('matriculas:horario_list')
 
     def form_valid(self, form):
-        messages.success(self.request, 'Horario actualizado exitosamente')
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        messages.success(
+            self.request,
+            f'Horario "{self.object.nombre}" actualizado exitosamente'
+        )
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Editar Horario: {self.object.nombre}'
+        return context
+
+class HorarioDeleteView(LoginRequiredMixin, DeleteView):
+    model = Horario
+    template_name = 'matriculas/horario_confirm_delete.html'
+    success_url = reverse_lazy('matriculas:horario_list')
+
+    def delete(self, request, *args, **kwargs):
+        response = super().delete(request, *args, **kwargs)
+        messages.success(
+            request,
+            f'Horario "{self.object.nombre}" eliminado exitosamente'
+        )
+        return response
 
 # Vistas para Alumnos
 class AlumnoListView(LoginRequiredMixin, ListView):
@@ -226,6 +268,13 @@ class AlumnoDetailView(LoginRequiredMixin, DetailView):
     model = Alumno
     template_name = 'matriculas/alumno_detail.html'
     context_object_name = 'alumno'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        alumno = self.get_object()
+        context['tiene_matricula'] = alumno.matriculas.exists()
+        context['matricula'] = alumno.matriculas.first()
+        return context
 
 class AlumnoDeleteView(LoginRequiredMixin, View):
     def post(self, request, pk):
@@ -365,6 +414,32 @@ def asignar_apoderado_existente(request):
     messages.success(request, f'{apoderado.nombre_completo} asignado a {alumno.nombres_completos}')
     return redirect('matriculas:alumno_detail', pk=alumno.pk)
 
+@login_required
+def enviar_ficha_matricula_whatsapp(request, matricula_id):
+    matricula = get_object_or_404(Matricula, id=matricula_id)
+    apoderado = matricula.apoderado
+    if not apoderado:
+        messages.error(request, "La matrícula no tiene apoderado asignado.")
+        return redirect('matriculas:matricula_detail', pk=matricula_id)
+
+    #enlace de descarga del PDF
+    pdf_url = request.build_absolute_uri(reverse('matriculas:ficha_matricula_pdf', args=[matricula.id]))
+
+    mensaje = (
+        f"Estimado/a {apoderado.nombre_completo},\n"
+        f"Adjunto la ficha de matrícula de su {matricula.alumno.sexo_data } {matricula.alumno.nombres_completos}.\n"
+        f"Código del estudiante: {matricula.alumno.codigo}\n"
+        f"DNI: {matricula.alumno.dni}\n"
+        f"Puede descargar la ficha aquí: {pdf_url}"
+    )
+
+    # Formatear para WhatsApp (URL encode)
+    import urllib.parse
+    mensaje_encoded = urllib.parse.quote(mensaje)
+    telefono = apoderado.celular if hasattr(apoderado, 'celular') and apoderado.celular else ''
+    wa_url = f"https://wa.me/{telefono}?text={mensaje_encoded}" if telefono else f"https://wa.me/?text={mensaje_encoded}"
+
+    return HttpResponseRedirect(wa_url)
 # Vistas para Matrículas
 class MatriculaListView(LoginRequiredMixin, ListView):
     model = Matricula
@@ -714,20 +789,20 @@ class UsuarioCreateView(CreateView):
     template_name = 'matriculas/usuario_create.html'
 
     def form_valid(self, form):
+        # Generar clave aleatoria
+        password = User.objects.make_random_password()
+
+        # Crear usuario con esa clave
         usuario = form.save(commit=False)
-        raw_password = form.cleaned_data.get("password")  # almacena antes de guardar
-        usuario.set_password(raw_password)
+        usuario.set_password(password)
         usuario.save()
-        
-        tipo = getattr(usuario.perfil, 'tipo', 'usuario')  # si usas perfil
 
-        messages.success(
-            self.request,
-            f"✅ Usuario creado con éxito.<br><strong>Usuario:</strong> {usuario.username} <br><strong>Contraseña:</strong> {raw_password} <br><strong>Tipo:</strong> {tipo}"
-        )
-
-        # Redirigir a la misma URL para limpiar el formulario (POST-Redirect-GET)
-        return redirect(reverse('matriculas:usuario_create'))
+        # Renderizar el mismo template pero con clave inicial y formulario vacío
+        return render(self.request, self.template_name, {
+            'form': self.get_form_class()(),  # nuevo form vacío
+            'password_inicial': password,
+            'username': usuario.username
+        })
 
 @login_required
 def cobranza_vencidas_view(request):

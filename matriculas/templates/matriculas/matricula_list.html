@@ -12,7 +12,7 @@
             class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 transition">
             ➕ Nueva Matrícula
         </a>
-    </div>
+    </div>  
 
     <!-- Buscador -->
     <form method="get" class="mb-4 ">
@@ -37,9 +37,11 @@
                     <th class="px-4 py-2">Ciclo</th>
                     <th class="px-4 py-2">Estado</th>
                     <th class="px-4 py-2">Turno</th>
+                    <th class="px-4 py-2">Horario</th>
                     <th class="px-4 py-2 text-center">Acciones</th>
                     <th class="px-4 py-2 text-center">Pagos</th>
                     <th class="px-4 py-2 text-center">Ficha de Matrícula</th>
+                    <th class="px-4 py-2 text-center">Enviar ficha a WhatsApp</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -51,6 +53,14 @@
                     <td class="px-4 py-2">{{ matricula.ciclo }}</td>
                     <td class="px-4 py-2">{{ matricula.estado }}</td>
                     <td class="px-4 py-2">{{ matricula.turno }}</td>
+                    <td class="px-4 py-2">
+                        {% if matricula.horario %}
+                            {{ matricula.horario.hora_inicio1|time:"g:i a" }} - {{ matricula.horario.hora_fin1|time:"g:i a" }}
+                            {% if matricula.horario.hora_inicio2 %}<br>{{ matricula.horario.hora_inicio2|time:"g:i a" }} - {{ matricula.horario.hora_fin2|time:"g:i a" }}{% endif %}
+                        {% else %}
+                            <span class="text-gray-400 text-sm italic">No definido</span>
+                        {% endif %}
+                    </td>
                     <td class="px-4 py-2 text-center space-x-1
                         flex justify-center items-center">
                         <a href="{% url 'matriculas:matricula_detail' matricula.pk %}"
@@ -69,13 +79,19 @@
                     <td class="px-4 py-2 border text-center">
                         <a href="{% url 'matriculas:lista_pagos_matricula' matricula.id %}"
                             class="inline-block bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded transition">
-                            Detalle de Pagos
+                            Pagos
                         </a>
                     </td>
                     <td class="px-4 py-2 text-center">
                         <a href="{% url 'matriculas:ficha_matricula_pdf' matricula.pk %}"
                             class="inline-block bg-green-500 hover:bg-green-600 text-white text-xs font-semibold px-3 py-1 rounded transition">
-                            Generar Recibo
+                            Generar ficha
+                        </a>
+                    </td>
+                    <td class="px-4 py-2 text-center">
+                        <a href="{% url 'matriculas:enviar_ficha_matricula_whatsapp' matricula.id %}"
+                            class="inline-block bg-green-500 hover:bg-green-600 text-white text-xs font-semibold px-3 py-1 rounded transition">
+                            Enviar Matrícula
                         </a>
                     </td>
                 </tr>

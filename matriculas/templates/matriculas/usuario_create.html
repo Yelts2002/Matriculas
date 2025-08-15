@@ -12,20 +12,15 @@
             </h2>
         </div>
 
-        <!-- Mensajes -->
-        {% if messages %}
+        <!-- Mensaje de cuenta creada -->
+        {% if password_inicial %}
         <div class="px-6 pt-6">
-            {% for message in messages %}
-                <div class="mb-4 px-4 py-3 rounded-md text-sm font-medium
-                    {% if message.tags == 'success' %} bg-green-100 text-green-800
-                    {% elif message.tags == 'info' %} bg-blue-100 text-blue-800
-                    {% elif message.tags == 'warning' %} bg-yellow-100 text-yellow-800
-                    {% else %} bg-red-100 text-red-800
-                    {% endif %}
-                ">
-                    {{ message }}
-                </div>
-            {% endfor %}
+            <div class="mb-4 px-4 py-3 rounded-md text-sm font-medium bg-green-100 text-green-800">
+                <strong>Usuario creado correctamente.</strong><br>
+                <strong>Usuario:</strong> {{ username }}<br>
+                <strong>Contraseña inicial:</strong> <span class="text-red-600">{{ password_inicial }}</span><br>
+                <small class="text-gray-600">Por seguridad, esta contraseña solo se mostrará una vez.</small>
+            </div>
         </div>
         {% endif %}
 

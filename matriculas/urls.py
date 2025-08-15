@@ -40,6 +40,7 @@ urlpatterns = [
     path('matriculas/<int:pk>/editar/', MatriculaUpdateView.as_view(), name='matricula_update'),
     path('matriculas/ficha/<int:pk>/pdf/', ficha_matricula_pdf, name='ficha_matricula_pdf'),
     path('matriculas/eliminar/<int:pk>/', MatriculaDeleteView.as_view(), name='matricula_delete'),
+    path('matricula/<int:matricula_id>/enviar-ficha-whatsapp/', enviar_ficha_matricula_whatsapp, name='enviar_ficha_matricula_whatsapp'),
 
     # Pagos
     path('pagos/matricula/<int:matricula_id>/', lista_pagos_matricula, name='lista_pagos_matricula'),
@@ -66,12 +67,12 @@ urlpatterns = [
     path('horarios/', HorarioListView.as_view(), name='horario_list'),
     path('horarios/registrar/', HorarioCreateView.as_view(), name='horario_create'),
     path('horarios/editar/<int:pk>/', HorarioUpdateView.as_view(), name='horario_update'),    
-
+    path('horarios/eliminar/<int:pk>/', HorarioDeleteView.as_view(), name='horario_delete'),
+    
     # Usuarios
     path('login/', CustomLoginView.as_view(), name='login'),
     path('logout/', CustomLogoutView.as_view(), name='logout'),
     path('password_change/', CustomPasswordChangeView.as_view(), name='password_change'),
     path('password_change/done/', CustomPasswordChangeDoneView.as_view(), name='password_change_done'),
     path('usuarios/crear/', UsuarioCreateView.as_view(), name='usuario_create'),
-
 ]

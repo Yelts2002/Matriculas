@@ -11,8 +11,6 @@
         <div class="bg-primary px-6 py-4 text-white">
             <h3 class="text-xl font-bold">{% if object %}Editar{% else %}Registrar{% endif %} Matrícula</h3>
         </div>
-
-        <!-- Form Body -->
         <div class="p-6">
             <form method="post" enctype="multipart/form-data" novalidate class="space-y-6">
                 {% csrf_token %}
@@ -41,7 +39,6 @@
                     {% endfor %}
                 </div>
 
-                <!-- En tu template, reemplaza la sección de cuotas con esto -->
                 <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mt-6">
                     <h4 class="text-lg font-medium text-gray-800 mb-4">Configuración de Cuotas</h4>
 
@@ -74,8 +71,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Form Actions -->
                 <div class="flex justify-between pt-6 border-t border-gray-200">
                     <button type="submit"
                         class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">

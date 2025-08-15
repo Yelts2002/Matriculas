@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Alumno, Turno, Horario, Ciclo, Apoderado, Matricula, Pago, Perfil
+from .models import Alumno, Turno, Horario, Ciclo, Apoderado, Matricula, Pago, Perfil, MensajeWhatsAppConfig
 
 @admin.register(Alumno)
 class AlumnoAdmin(admin.ModelAdmin):
@@ -75,9 +75,14 @@ class TurnoAdmin(admin.ModelAdmin):
 
 @admin.register(Horario)
 class HorarioAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'turno', 'hora_inicio', 'hora_fin')
-    list_filter = ('turno',)
-    ordering = ('turno', 'hora_inicio')
+    list_display = ('id', 'nombre', 'resumen_horario')
+
+    def resumen_horario(self, obj):
+        resumen = f"{obj.get_dias_bloque1_display()} {obj.hora_inicio1.strftime('%H:%M')} - {obj.hora_fin1.strftime('%H:%M')}"
+        if obj.hora_inicio2 and obj.hora_fin2 and obj.dias_bloque2:
+            resumen += f" / {obj.get_dias_bloque2_display()} {obj.hora_inicio2.strftime('%H:%M')} - {obj.hora_fin2.strftime('%H:%M')}"
+        return resumen
+    resumen_horario.short_description = "Horario"
 
 @admin.register(Matricula)
 class MatriculaAdmin(admin.ModelAdmin):
@@ -108,6 +113,12 @@ class PagoAdmin(admin.ModelAdmin):
     list_display = ('matricula', 'numero_cuota', 'estado', 'monto_pagado', 'fecha_pago')
     list_filter = ('estado', 'tipo_pago')
     search_fields = ('matricula__codigo', 'matricula__alumno__nombres_completos')
+
+@admin.register(MensajeWhatsAppConfig)
+class MensajeWhatsAppConfigAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'activo')
+    search_fields = ('nombre',)
+    list_filter = ('activo',) 
 
 @admin.register(Perfil)
 class PerfilAdmin(admin.ModelAdmin):

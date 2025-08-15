@@ -4,7 +4,8 @@
 {% block content %}
 <div class="max-w-6xl mx-auto mt-10 px-4">
     <h2 class="text-3xl font-bold text-gray-800 mb-4">💸 Cuotas Vencidas y Pendientes</h2>
-    <p class="text-gray-600 mb-8">Visualiza las cuotas vencidas que aún no han sido pagadas y contacta a los apoderados para recordarles sus obligaciones.</p>
+    <p class="text-gray-600 mb-8">Visualiza las cuotas vencidas que aún no han sido pagadas y contacta a los apoderados
+        para recordarles sus obligaciones.</p>
 
     {% if apoderados %}
     <div class="space-y-10">
@@ -23,6 +24,7 @@
                             <th scope="col" class="px-4 py-2">Monto</th>
                             <th scope="col" class="px-4 py-2">Vencimiento</th>
                             <th scope="col" class="px-4 py-2">Acción</th>
+                            <th scope="col" class="px-4 py-2">Ver Ficha</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -32,13 +34,20 @@
                             <td class="px-4 py-2">{{ cuota.matricula.alumno.nombres_completos }}</td>
                             <td class="px-4 py-2">N° {{ cuota.numero_cuota }}</td>
                             <td class="px-4 py-2 font-medium">S/ {{ cuota.monto_programado|floatformat:2 }}</td>
-                            <td class="px-4 py-2 text-red-600 font-semibold">{{ cuota.fecha_vencimiento|date:"d/m/Y" }}</td>
+                            <td class="px-4 py-2 text-red-600 font-semibold">{{ cuota.fecha_vencimiento|date:"d/m/Y" }}
+                            </td>
                             <td class="px-4 py-2">
                                 <a href="{% url 'matriculas:enviar_recordatorio_cobranza' grupo.apoderado.id %}"
-                                   target="_blank" rel="noopener noreferrer"
-                                   class="inline-flex items-center gap-2 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-md text-xs font-semibold shadow-sm transition"
-                                   title="Enviar recordatorio por WhatsApp">
+                                    target="_blank" rel="noopener noreferrer"
+                                    class="inline-flex items-center gap-2 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-md text-xs font-semibold shadow-sm transition"
+                                    title="Enviar recordatorio por WhatsApp">
                                     <i class="bi bi-whatsapp text-lg"></i> Enviar WhatsApp
+                                </a>
+                            </td>
+                            <td class="px-4 py-2">
+                                <a href="{% url 'matriculas:ficha_matricula_pdf' cuota.matricula.pk %}" target="_blank"
+                                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded">
+                                    Ver matricula
                                 </a>
                             </td>
                         </tr>
